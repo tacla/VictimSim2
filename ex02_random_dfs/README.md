@@ -3,9 +3,9 @@ This example features an explorer agent that walks randomly in the environment. 
 
 How to use:
 - copy the explorer.py, rescuer.py, and main.py to some folder
-- copy the folder 'vs' to the <folder>
+- copy the folder 'vs' to the folder
 
-You should have this strutcture
+You should get this strutcture:
 * folder
   * main.py
   * rescuer.py
