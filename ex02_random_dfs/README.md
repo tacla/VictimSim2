@@ -6,13 +6,9 @@ How to use:
 - copy the folder 'vs' to the <folder>
 
 <folder>
-   +---- main.py
-   
-   +---- rescuer.py
-   
-   +---- explorer.py
-   
-   +-----vs
-   
+   +---- main.py   
+   +---- rescuer.py   
+   +---- explorer.py   
+   +-----vs   
          +--- all the VictimSim .py
          
