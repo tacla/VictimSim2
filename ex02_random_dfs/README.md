@@ -6,16 +6,13 @@ How to use:
 - copy the folder 'vs' to the <folder>
 
 You should have this strutcture
-- - folder
-  - main.py
-  - rescuer.py
-   +---- main.py
-
-   +---- rescuer.py
-   
-   +---- explorer.py
-  
-   +-----vs
-   
-         +--- all the VictimSim .py
+* folder
+  * main.py
+  * rescuer.py
+  * explorer.py
+  * vs
+    * abstract_agent.py
+    * constants.py
+    * environment.py
+    * physical_agent.py
          
