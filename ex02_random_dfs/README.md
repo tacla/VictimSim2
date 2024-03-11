@@ -7,7 +7,12 @@ How to use:
 
 <folder>
    +---- main.py
+   
    +---- rescuer.py
+   
    +---- explorer.py
+   
    +-----vs
+   
          +--- all the VictimSim .py
+         
