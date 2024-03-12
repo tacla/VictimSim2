@@ -5,5 +5,5 @@ The name of the folder represents:
 - the number of victims
 
 For instance, a folder named
-* _data_20x30_400vic_ would contain a enviroment of size 20 cols x 30 rows with 400 victims.
+* _data_20x30_400vic_ would contain a enviroment of 20 cols x 30 rows with 400 victims.
 * _data_800vic_ would contain only the vital signals of the victims for regression/classification tasks. In this case, we omit the width x height information.
