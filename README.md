@@ -1,9 +1,10 @@
 VictimSim2
 ==========
 
-A simulator designed for testing search algorithms and other IA techniques in rescue scenarios is utilized within the Artificial Intelligence course at UTFPR, Curitiba. Known as VictimSim2, this simulator replicates catastrophic scenarios within a 2D grid environment, where artificial agents embark on search and rescue missions to locate and aid victims.
+A simulator designed for testing search algorithms and other IA techniques in rescue scenarios is utilized within the Artificial Intelligence course at UTFPR, Curitiba. Known as VictimSim2, this simulator is useful for studying catastrophic scenarios within a 2D grid environment, where artificial agents embark on search and rescue missions to locate and aid victims.
 
-Key features of the simulator include:
+Key features of the simulator
+-----------------------------
 
 - The environment comprises a 2D grid, indexed by coordinates (row, column) or (x, y). The origin is situated at the upper left corner, with the x-axis extending downwards and the y-axis extending towards the right. While the absolute coordinates are accessible solely to the environment simulator, users are encouraged to establish their own coordinate system for the agents.
 - Each cell within the 2D grid is assigned a degree of difficulty for accessibility, ranging from values greater than zero to 100. The maximum value of 100 indicates the presence of an impassable wall, while higher values signify increasingly challenging access. Conversely, values less than or equal to one denote easier entry.
