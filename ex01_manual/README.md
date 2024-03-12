@@ -3,7 +3,7 @@ This example allows the user to control the explorer agent with commands given b
 
 How to use:
 - copy the explorer.py, rescuer.py, and main.py to some [folder]
-- copy the folder vs to the folder
+- copy the folder [vs] to the [folder]
 
 You should get a structure like:
 
