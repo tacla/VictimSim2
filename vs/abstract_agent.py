@@ -141,7 +141,7 @@ class AbstAgent:
         @returns:
         - VS.TIME_EXCEEDED if the agent has no enough battery time to read the vital signals or
         - the list of vital signals (if there is a victim at the current agent's position), composed by
-          <seq, pSist, pDiast, qPA, pulse, respiratory freq, or
+          <seq, pSist, pDiast, qPA, pulse, respiratory freq>, or
         - an empty list if there is no victim at the current agent's position."""
         return self.__body._read_vital_signals()
 
