@@ -125,7 +125,7 @@ class Env:
     def __read_config(self):
         """ Read the size of the grid and window and loads into a dictionary """   
         # Open config file
-        size_file = os.path.join(self.data_folder, "env_size.txt")
+        size_file = os.path.join(self.data_folder, "env_config.txt")
         with open(size_file, "r") as file:
             # Read each line of the file
             for line in file:
@@ -319,10 +319,15 @@ class Env:
             # Show metrics when there is no more active or idle agents
             if not active_or_idle:
                 print("ENV: no active or idle agent scheduled for execution... terminating")
-                #self.print_results()
-                #print("\n--------------")
-                self.print_acum_results()
-                #input("ENV: Tecle qualquer coisa para encerrar >>")
+                if self.dic["STATS_PER_AG"] == 1:
+                    print("RESULTS PER AGENT")
+                    self.print_results()
+
+                if self.dic["STATS_ALL_AG"] == 1:
+                    print("\n--------------")
+                    self.print_acum_results()
+                    
+                input("ENV: Tecle qualquer coisa para encerrar >>")
                 running = False
    
 
@@ -385,14 +390,14 @@ class Env:
 
             # Remaining time
             print("\n*** Used time ***")
-            print(f"{body.mind.TLIM - body.rtime} of {body.mind.TLIM}")
+            print(f"{body._rtime:.2f} of {body.mind.TLIM:.2f}")
         
             # Found victims
-            found = body.get_found_victims()
+            found = body._get_found_victims()
             self.__print_victims(found, "found","e", ident=5)
 
             # Saved victims
-            saved = body.get_saved_victims()
+            saved = body._get_saved_victims()
             self.__print_victims(saved, "saved","s", ident=5)
  
             
