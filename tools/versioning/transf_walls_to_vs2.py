@@ -12,7 +12,7 @@
 ##       max_width = 20       max_height= 24
 ##       min_difficuly = 0.5  max_difficulty = 3
 ##
-## The default input file is env_walls.txt and the output file is env_obsts.txt
+## The default input file is env_walls.txt and the output file is env_obst.txt
 
 import csv
 import random
@@ -63,7 +63,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     input_file = "env_walls.txt"
-    output_file = "env_obsts.txt"
+    output_file = "env_obst.txt"
     output_file = add_difficulty_column(input_file, output_file)
     generate_obstacles(output_file, args.k, args.max_width, args.max_height, args.min_difficulty, args.max_difficulty)
     print("Obstacles generated and appended to the file:", output_file)
