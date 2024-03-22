@@ -1,4 +1,4 @@
-This folder contains the results obtained by running the random_dfs explorer and rescur agents with:
+This folder contains the results obtained by running the random_dfs explorer and rescuer agents with:
 * dataset: 225v_100x80
 * TLIM for the explorer: 2000
 * TLIM for the rescuer: 1000
