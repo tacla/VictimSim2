@@ -5,5 +5,5 @@ The name of the folder represents:
 - the size of the grid: columns x rows 
 
 For instance, a folder named
-* _data_400v_20x32_ would contain a enviroment of 20 cols x 33 rows with 400 victims.
+* _data_400v_20x32_ would contain a enviroment of 20 cols x 32 rows with 400 victims.
 * _data_800v would_ contain only the vital signals of the victims for regression/classification tasks. In this case, we omit the width x height information.
