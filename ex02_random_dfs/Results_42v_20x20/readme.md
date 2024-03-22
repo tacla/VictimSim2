@@ -27,4 +27,4 @@ Vsg : metric - nb of saved victims weighted per severity
 
 Graphics
 --------
-![Here(https://github.com/tacla/VictimSim2/blob/main/ex02_random_dfs/Results_42v_20x20/42v_20x20_results.png)]
+![Here](https://github.com/tacla/VictimSim2/blob/main/ex02_random_dfs/Results_42v_20x20/42v_20x20_results.png)
