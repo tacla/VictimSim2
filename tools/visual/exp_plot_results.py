@@ -26,8 +26,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import math
 
-descriptor_file = 'exp_132v_100x80_descriptor.txt'
-results_file = 'exp_132v_100x80_results.txt'
+descriptor_file = 'exp_225v_100x80_descriptor.txt'
+results_file = 'exp_225v_100x80_results.txt'
 
 # Read the CSV file containing descriptors into a pandas DataFrame
 df_descriptor = pd.read_csv(descriptor_file, skipinitialspace=True)
@@ -93,6 +93,7 @@ axes[0].bar(ve_means.index, ve_means, yerr=ve_std, capsize=5, color='blue', alph
 axes[0].set_title('Mean number of found victims per severity (abs)')
 axes[0].set_ylim(0, max_mean)
 axes[0].set_ylabel('Nb of victims')
+
 print(f"\nFound victims (mean abs value)")
 print(f"{ve_means.to_string(index=True, header=True)}")
 
@@ -103,16 +104,18 @@ axes[1].bar(ve_means.index, rel_means, yerr=rel_std_dev, capsize=5, color='blue'
 axes[1].set_title('Mean number of found victims per severity (%)')
 axes[1].set_ylim(0, 1)
 axes[1].set_ylabel('Nb of victims(%)')
-print(f"\nFound victims ")
+
+print(f"\nFound victims (% mean value over the total of victims)")
 for i in range(len(rel_means)):    
-    print(f"Ve{i+1:1d}: {rel_means[i]*100:.2f}%")
+    print(f"Ve{i+1:1d}: {rel_means[i]:.4f}%")
 
 # Plot for 'Vs' columns
 axes[2].bar(vs_means.index, vs_means, yerr=vs_std, capsize=5, color='green', alpha=0.7)
 axes[2].set_title('Mean number of saved per severity (abs)')
 axes[2].set_ylim(0, max_mean)
 axes[2].set_ylabel('Nb of victims')
-print(f"\n Saved victims (mean abs value)")
+
+print(f"\nSaved victims (mean abs value)")
 print(f"{vs_means.to_string(index=True, header=True)}")
 
 # Plot for relative values of Vs (saved)
@@ -121,10 +124,11 @@ rel_std_dev = [value['std_dev'] for value in rel_vs.values()]
 axes[3].bar(vs_means.index, rel_means, yerr=rel_std_dev, capsize=5, color='green', alpha=0.7)
 axes[3].set_title('Mean number of saved victims per severity (%)')
 axes[3].set_ylim(0, 1)
-axes[3].set_ylabel('Nb of victims(%)')
-print(f"\n Saved victims (mean abs value)")
+axes[3].set_ylabel('Nb of victims (%)')
+
+print(f"\nSaved victims (% mean value over the total of victims)")
 for i in range(len(rel_means)):    
-    print(f"Vs{i+1:1d}: {rel_means[i]*100:.2f}%")
+    print(f"Vs{i+1:1d}: {rel_means[i]:.4f}%")
 
 ### Plot for 'Veg' and 'Vsg' columns
 veg_vsg_means = [veg_mean, vsg_mean]
