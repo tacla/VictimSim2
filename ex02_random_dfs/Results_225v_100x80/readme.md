@@ -5,7 +5,7 @@ This folder contains the results obtained by running the random_dfs explorer and
 * 1 explorer agent
 * 1 rescuer agent
 
-To see the results graphically, please run `exp_plot_results.py` available on the `tools/visual/` folder. You will need both files available in this folder for the program to run (see below). In the bottom of this page, you can see the grapfhical results.
+To see the results graphically, please run `exp_plot_results.py` available on the `tools/visual/` folder. You will need both files available in this folder for the program to run (see below). At the bottom of this page, you see the graphical results.
 
 exp_225v_100x80_descriptor.txt
 ----------------------------
