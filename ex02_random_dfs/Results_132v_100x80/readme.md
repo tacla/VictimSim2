@@ -12,20 +12,20 @@ There are two files obtained from the prints of the environment.
 exp_132v_100x80_descriptor.txt
 ----------------------------
 Contains the descriptor of the victims file per severity
-V1: nb of critical victims
-V2: nb of instable
-V3: nb of potentially instable
-V4: nb of stable
-SG: sum of the severity (gravidade) for all victims
+* V1: nb of critical victims
+* V2: nb of instable
+* V3: nb of potentially instable
+* V4: nb of stable
+* SG: sum of the severity (gravidade) for all victims
 
 
 exp_132v_100x80_results.txt
 -------------------------
 Contains the results of severalruns. Each line corresponds to one run.
-Ve_i: found victims per severity
-Veg : metric - nb of found victims weighted per severity
-Vs_i: saved victims per severity
-Vsg : metric - nb of saved victims weighted per severity
+* Ve_i: found victims per severity
+* Veg : metric - nb of found victims weighted per severity
+* Vs_i: saved victims per severity
+* Vsg : metric - nb of saved victims weighted per severity
 
 Graphics
 --------
