@@ -1,5 +1,5 @@
 This folder contains the results obtained by running the random_dfs explorer and rescuer agents with:
-* dataset: [`data_225v_100x80`](datasets/data_225v_100x80)
+* dataset: [`data_225v_100x80`](https://github.com/tacla/VictimSim2/tree/29e076897e4fe7c94887b74b2219d011882e701c/datasets/data_225v_100x80)
 * TLIM for the explorer: 2000
 * TLIM for the rescuer: 1000
 * 1 explorer agent
