@@ -1,7 +1,8 @@
 ## VictimSim2
 ## Author: Cesar Tacla, UTFPR
 ##
-## It transformas a env_walls.txt 9into a env_obsts.txt file (from the version 1's format to the version 2)
+## It transformas a env_walls.txt config file into the new one: env_obsts.txt
+##   (from the version 1's format to the version 2)
 ## - it adds a third column to every line of the walls with the value VS.OBST_WALLS (100)
 ## - it adds K new obstacles within the range [max_width, max_height] given as arguments
 ## - each new obstacle has a degree of difficulty in the range [min_difficulty, max_difficulty]
