@@ -52,16 +52,16 @@ class Rescuer(AbstAgent):
         self.map.draw()
 
         print()
-        print(f"{self.NAME} List of found victims received from the explorer")
+        #print(f"{self.NAME} List of found victims received from the explorer")
         self.victims = victims
 
         # print the found victims - you may comment out
-        for seq, data in self.victims.items():
-            coord, vital_signals = data
-            x, y = coord
-            print(f"{self.NAME} Victim seq number: {seq} at ({x}, {y}) vs: {vital_signals}")
+        #for seq, data in self.victims.items():
+        #    coord, vital_signals = data
+        #    x, y = coord
+        #    print(f"{self.NAME} Victim seq number: {seq} at ({x}, {y}) vs: {vital_signals}")
 
-        print(f"{self.NAME} time limit to rescue {self.plan_rtime}")
+        #print(f"{self.NAME} time limit to rescue {self.plan_rtime}")
 
         self.__planner()
         print(f"{self.NAME} PLAN")
@@ -105,20 +105,20 @@ class Rescuer(AbstAgent):
             self.plan_x += dx
             self.plan_y += dy
             difficulty, vic_seq, next_actions_res = self.map.get((self.plan_x, self.plan_y))
-            print(f"{self.NAME}: planning to go to ({self.plan_x}, {self.plan_y})")
+            #print(f"{self.NAME}: planning to go to ({self.plan_x}, {self.plan_y})")
 
             if dx == 0 or dy == 0:
                 step_cost = self.COST_LINE * difficulty
             else:
                 step_cost = self.COST_DIAG * difficulty
 
-            print(f"{self.NAME}: difficulty {difficulty}, step cost {step_cost}")
-            print(f"{self.NAME}: accumulated walk time {self.plan_walk_time}, rtime {self.plan_rtime}")
+            #print(f"{self.NAME}: difficulty {difficulty}, step cost {step_cost}")
+            #print(f"{self.NAME}: accumulated walk time {self.plan_walk_time}, rtime {self.plan_rtime}")
 
             # check if there is enough remaining time to walk back to the base
             if self.plan_walk_time + step_cost > self.plan_rtime:
                 enough_time = False
-                print(f"{self.NAME}: no enough time to go to ({self.plan_x}, {self.plan_y})")
+                #print(f"{self.NAME}: no enough time to go to ({self.plan_x}, {self.plan_y})")
             
             if enough_time:
                 # the rescuer has time to go to the next position: update walk time and remaining time
@@ -128,7 +128,7 @@ class Rescuer(AbstAgent):
 
                 if vic_seq == VS.NO_VICTIM:
                     self.plan.append((dx, dy, False)) # walk only
-                    print(f"{self.NAME}: added to the plan, walk to ({self.plan_x}, {self.plan_y}, False)")
+                    #print(f"{self.NAME}: added to the plan, walk to ({self.plan_x}, {self.plan_y}, False)")
 
                 if vic_seq != VS.NO_VICTIM:
                     # checks if there is enough remaining time to rescue the victim and come back to the base
@@ -137,7 +137,7 @@ class Rescuer(AbstAgent):
                         enough_time = False
                     else:
                         self.plan.append((dx, dy, True))
-                        print(f"{self.NAME}:added to the plan, walk to and rescue victim({self.plan_x}, {self.plan_y}, True)")
+                        #print(f"{self.NAME}:added to the plan, walk to and rescue victim({self.plan_x}, {self.plan_y}, True)")
                         self.plan_rtime -= self.COST_FIRST_AID
 
             # let's see what the agent can do in the next position
@@ -188,12 +188,12 @@ class Rescuer(AbstAgent):
 
         # No more actions to do
         if self.plan == []:  # empty list, no more actions to do
-           input(f"{self.NAME} has finished the plan [ENTER]")
+           #input(f"{self.NAME} has finished the plan [ENTER]")
            return False
 
         # Takes the first action of the plan (walk action) and removes it from the plan
         dx, dy, there_is_vict = self.plan.pop(0)
-        print(f"{self.NAME} pop dx: {dx} dy: {dy} vict: {there_is_vict}")
+        #print(f"{self.NAME} pop dx: {dx} dy: {dy} vict: {there_is_vict}")
 
         # Walk - just one step per deliberation
         walked = self.walk(dx, dy)
@@ -202,7 +202,7 @@ class Rescuer(AbstAgent):
         if walked == VS.EXECUTED:
             self.x += dx
             self.y += dy
-            print(f"{self.NAME} Walk ok - Rescuer at position ({self.x}, {self.y})")
+            #print(f"{self.NAME} Walk ok - Rescuer at position ({self.x}, {self.y})")
             # check if there is a victim at the current position
             if there_is_vict:
                 rescued = self.first_aid() # True when rescued

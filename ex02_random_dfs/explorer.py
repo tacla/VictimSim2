@@ -41,7 +41,6 @@ class Explorer(AbstAgent):
         self.resc = resc           # reference to the rescuer agent
         self.x = 0                 # current x position relative to the origin 0
         self.y = 0                 # current y position relative to the origin 0
-        self.time_to_comeback = math.ceil(self.TLIM * 0.6)  # set the time to come back to the base
         self.map = Map()           # create a map for representing the environment
         self.victims = {}          # a dictionary of found victims: (seq): ((x,y), [<vs>])
                                    # the key is the seq number of the victim,(x,y) the position, <vs> the list of vital signals
@@ -78,7 +77,7 @@ class Explorer(AbstAgent):
         if result == VS.BUMPED:
             # update the map with the wall
             self.map.add((self.x + dx, self.y + dy), VS.OBST_WALL, VS.NO_VICTIM, self.check_walls_and_lim())
-            print(f"{self.NAME}: Wall or grid limit reached at ({self.x + dx}, {self.y + dy})")
+            #print(f"{self.NAME}: Wall or grid limit reached at ({self.x + dx}, {self.y + dy})")
 
         if result == VS.EXECUTED:
             # check for victim returns -1 if there is no victim or the sequential
@@ -95,7 +94,7 @@ class Explorer(AbstAgent):
                 vs = self.read_vital_signals()
                 self.victims[vs[0]] = ((self.x, self.y), vs)
                 print(f"{self.NAME} Victim found at ({self.x}, {self.y}), rtime: {self.get_rtime()}")
-                print(f"{self.NAME} Seq: {seq} Vital signals: {vs}")
+                #print(f"{self.NAME} Seq: {seq} Vital signals: {vs}")
             
             # Calculates the difficulty of the visited cell
             difficulty = (rtime_bef - rtime_aft)
@@ -106,7 +105,7 @@ class Explorer(AbstAgent):
 
             # Update the map with the new cell
             self.map.add((self.x, self.y), difficulty, seq, self.check_walls_and_lim())
-            print(f"{self.NAME}:at ({self.x}, {self.y}), diffic: {difficulty:.2f} vict: {seq} rtime: {self.get_rtime()}")
+            #print(f"{self.NAME}:at ({self.x}, {self.y}), diffic: {difficulty:.2f} vict: {seq} rtime: {self.get_rtime()}")
 
         return
 
@@ -124,25 +123,26 @@ class Explorer(AbstAgent):
             # update the agent's position relative to the origin
             self.x += dx
             self.y += dy
-            print(f"{self.NAME}: coming back at ({self.x}, {self.y}), rtime: {self.get_rtime()}")
+            #print(f"{self.NAME}: coming back at ({self.x}, {self.y}), rtime: {self.get_rtime()}")
         
     def deliberate(self) -> bool:
         """ The agent chooses the next action. The simulator calls this
         method at each cycle. Must be implemented in every agent"""
 
-        if self.get_rtime() > self.time_to_comeback:
+        consumed_time = self.TLIM - self.get_rtime()
+        if consumed_time < self.get_rtime():
             self.explore()
             return True
-        else:
-            # time to come back to the base
-            if self.walk_stack.is_empty():
-                # time to wake up the rescuer
-                # pass the walls and the victims (here, they're empty)
-                print(f"{self.NAME}: rtime {self.get_rtime()}, invoking the rescuer")
-                input(f"{self.NAME}: type [ENTER] to proceed")
-                self.resc.go_save_victims(self.map, self.victims)
-                return False
-            else:
-                self.come_back()
-                return True
+
+        # time to come back to the base
+        if self.walk_stack.is_empty() or (self.x == 0 and self.y == 0):
+            # time to wake up the rescuer
+            # pass the walls and the victims (here, they're empty)
+            print(f"{self.NAME}: rtime {self.get_rtime()}, invoking the rescuer")
+            #input(f"{self.NAME}: type [ENTER] to proceed")
+            self.resc.go_save_victims(self.map, self.victims)
+            return False
+
+        self.come_back()
+        return True
 
