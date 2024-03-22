@@ -1,7 +1,7 @@
 This folder contains the results obtained by running the random_dfs explorer and rescur agents with:
 * dataset: 42v_20x20
 * TLIM for the explorer: 600
-* TLIM for the rescuer: 400
+* TLIM for the rescuer: 300
 
 To see the results graphically, please run exp_plot_results.py available on the tools/visual
 
