@@ -170,10 +170,15 @@ class Env:
         self.screen.fill(VS.WHITE)
 
         # configuration for obstacles coloring
-        hue = 300  # Not relevant for grayscale; 0=Red, 120=green, 240=blue till 360
-        saturation = 0  # 40=Red 0=Grayscale
-        lightness_clear = 100  # 100 = White 
-        lightness_dark = 25  # 0=Black
+        # h,  s,   lc, ld:
+        # 13, 100, 100, 65 red tonalities
+        # 275,100, 100, 65 purple
+        # 90, 35,  100, 40 green tonaliies
+        #  0,  0,  100, 50 gray tonnalitites
+        hue = 0                # Not relevant for grayscale; 0=Red, 120=green, 240=blue till 360
+        saturation = 0         # 40=Red  0  = Grayscale
+        lightness_clear = 100  #         100= White 
+        lightness_dark = 40    #         0  = Black
 
         # configuration for ploting the trace marks
         nb_of_ag = len(self.agents)
@@ -374,8 +379,16 @@ class Env:
             
             print(f"{idents}Sum of gravities of all {type_str} victims = {tot_grav:.2f} of a total of {self.sum_gravity:.2f}")
             print(f"{idents}  % of gravities of all {type_str} victims = {tot_grav/self.sum_gravity:.2f}")
+            print(f"{idents}--------------------------------------")
+            print(f"{idents}CSV of {type_str} victims")
+            print(f"{idents}V{sub}1,V{sub}2,V{sub}3,V{sub}4,V{sub}g")
+            print(f"{idents}{sev.count(1)},{sev.count(2)},{sev.count(3)},{sev.count(4)},{weighted}")
         else:
             print(f"{idents}No {type_str} victims")
+            print(f"{idents}--------------------------------------")
+            print(f"{idents}CSV of {type_str} victims")
+            print(f"{idents}V{sub}1,V{sub}2,V{sub}3,V{sub}4,V{sub}g")
+            print(f"{idents}0,0,0,0,0.0")
 
     def print_results(self):
         """ For each agent, print found victims and saved victims by severity
@@ -389,8 +402,8 @@ class Env:
                 print("This agent is dead, you should discard its results, but...")
 
             # Remaining time
-            print("\n*** Used time ***")
-            print(f"{body._rtime:.2f} of {body.mind.TLIM:.2f}")
+            print("\n*** Consumed time ***")
+            print(f"{body.mind.TLIM - body._rtime:.2f} of {body.mind.TLIM:.2f}")
         
             # Found victims
             found = body._get_found_victims()
@@ -405,21 +418,27 @@ class Env:
         """ Print found victims and saved victims by severity for all agents.
         This is what actually happened in the environment"""
 
+
         print("\n\n*** ACUMULATED RESULTS - FOR ALL AGENTS ***\n")
         print(f" *** Numbers of Victims in the Environment ***")
-        print(f"   Critical victims   (V1) = {self.severity.count(1):3d}")
-        print(f"   Instable victims   (V2) = {self.severity.count(2):3d}")
-        print(f"   Pot. inst. victims (V3) = {self.severity.count(3):3d}")
-        print(f"   Stable victims     (V4) = {self.severity.count(4):3d}")
+        print(f"   Critical victims    (V1) = {self.severity.count(1):3d}")
+        print(f"   Instable victims    (V2) = {self.severity.count(2):3d}")
+        print(f"   Pot. inst. victims  (V3) = {self.severity.count(3):3d}")
+        print(f"   Stable victims      (V4) = {self.severity.count(4):3d}")
         print(f"   --------------------------------------")
-        print(f"   Total of victims   (V)  = {self.nb_of_victims:3d}")
+        print(f"   Total of victims    (V)  = {self.nb_of_victims:3d}")
+        print(f"   Sum of all gravities(SG) = {self.sum_gravity:.2f}")
+        print(f"   --------------------------------------")
+        print(f"   CSV of nb. total of victims")
+        print(f"   V1,V2,V3,V4,SG")
+        print(f"   {self.severity.count(1)},{self.severity.count(2)},{self.severity.count(3)},{self.severity.count(4)},{self.sum_gravity}")
 
         found = []
         for index, agents in enumerate(self.found, start=0):
             if agents:
                 found.append(index)
         print(f"")
-        print(f" *** FOUND victims by all explorer agents***")
+        print(f" *** FOUND victims by all explorer agents ***")
         self.__print_victims(found, "found", "e", ident=5)
     
         saved = []
@@ -427,5 +446,8 @@ class Env:
             if agents:
                 saved.append(index)
         print(f"")
-        print(f" *** SAVED victims by all rescuer agents***")
+        print(f" *** SAVED victims by all rescuer agents ***")
         self.__print_victims(saved, "saved", "s", ident=5)
+        print(f"\n *** END OF STATS ***")
+
+
