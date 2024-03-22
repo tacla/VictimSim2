@@ -5,7 +5,7 @@ This folder contains the results obtained by running the random_dfs explorer and
 * 1 explorer agent
 * 1 rescuer agent
 
-To see the results graphically, please run `exp_plot_results.py` available in the [`tools/visual/`](https://github.com/tacla/VictimSim2/tree/c36582490954ddb1b4d244c24addb30c9f43523b/tools/visual) folder. You will need both files available in the current folder for the program to run (see below). At the bottom of this page, you see the graphical results.
+To see the results graphically, please run `exp_plot_results.py` available in the [`tools/visual/`](https://github.com/tacla/VictimSim2/tree/c36582490954ddb1b4d244c24addb30c9f43523b/tools/visual) folder. You will need both files available in the current folder for the program to run (see below). At the bottom of this page, you see the results.
 
 exp_225v_100x80_descriptor.txt
 ----------------------------
@@ -20,9 +20,9 @@ Contains the descriptor of the victims file per severity
 exp_225v_100x80_results.txt
 -------------------------
 Contains the results of several runs. Each line corresponds to one run.
-* Ve_i: found victims per severity
+* Ve<sub>i</sub>: found victims per severity
 * Veg : metric - nb of found victims weighted per severity
-* Vs_i: saved victims per severity
+* Vs<sub>i</sub>: saved victims per severity
 * Vsg : metric - nb of saved victims weighted per severity
 
 Graphics
