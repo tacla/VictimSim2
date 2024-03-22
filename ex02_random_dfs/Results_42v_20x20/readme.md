@@ -24,3 +24,7 @@ Ve_i: found victims per severity
 Veg : metric - nb of found victims weighted per severity
 Vs_i: saved victims per severity
 Vsg : metric - nb of saved victims weighted per severity
+
+Graphics
+--------
+![GitHub Logo](https://github.com/tacla/VictimSim2/ex02_random_dfs/Results_42v_20x20/42v_20x20_results.png)
