@@ -5,7 +5,7 @@ This folder contains the results obtained by running the random_dfs explorer and
 * 1 explorer agent
 * 1 rescuer agent
 
-To see the results graphically, please run _exp_plot_results.py_ available on the tools/visual
+To see the results graphically, please run `exp_plot_results.py` available on the tools/visual
 
 There are two files obtained from the prints of the environment.
 
