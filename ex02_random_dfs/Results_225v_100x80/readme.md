@@ -29,4 +29,4 @@ Contains the results of severalruns. Each line corresponds to one run.
 
 Graphics
 --------
-![Here](https://github.com/tacla/VictimSim2/blob/main/ex02_random_dfs/Results_225v_100x80/225v_100x80_results.png)
+![Here](https://github.com/tacla/VictimSim2/blob/main/ex02_random_dfs/Results_225v_100x80/exp_225v_100x80_results.png)
