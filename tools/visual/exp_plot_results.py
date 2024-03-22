@@ -26,8 +26,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import math
 
-descriptor_file = 'exp_42v_20x20_descriptor.txt'
-results_file = 'exp_42v_20x20_results.txt'
+descriptor_file = 'exp_132v_100x80_descriptor.txt'
+results_file = 'exp_132v_100x80_results.txt'
 
 # Read the CSV file containing descriptors into a pandas DataFrame
 df_descriptor = pd.read_csv(descriptor_file, skipinitialspace=True)
@@ -40,6 +40,7 @@ df = pd.read_csv(results_file, skipinitialspace=True)
 print()
 print(f"Data")
 print(df)
+print(f"Runs: {len(df)}")
 
 # Separate columns starting with 'Ve' and 'Vs'
 ve_columns = [col for col in df.columns if col.startswith('Ve') and col != 'Veg']
@@ -92,6 +93,8 @@ axes[0].bar(ve_means.index, ve_means, yerr=ve_std, capsize=5, color='blue', alph
 axes[0].set_title('Mean number of found victims per severity (abs)')
 axes[0].set_ylim(0, max_mean)
 axes[0].set_ylabel('Nb of victims')
+print(f"\nFound victims (mean abs value)")
+print(f"{ve_means.to_string(index=True, header=True)}")
 
 # Plot for relative values of Ve (found)
 rel_means = [value['mean'] for value in rel_ve.values()]
@@ -100,12 +103,17 @@ axes[1].bar(ve_means.index, rel_means, yerr=rel_std_dev, capsize=5, color='blue'
 axes[1].set_title('Mean number of found victims per severity (%)')
 axes[1].set_ylim(0, 1)
 axes[1].set_ylabel('Nb of victims(%)')
+print(f"\nFound victims ")
+for i in range(len(rel_means)):    
+    print(f"Ve{i+1:1d}: {rel_means[i]*100:.2f}%")
 
 # Plot for 'Vs' columns
 axes[2].bar(vs_means.index, vs_means, yerr=vs_std, capsize=5, color='green', alpha=0.7)
 axes[2].set_title('Mean number of saved per severity (abs)')
 axes[2].set_ylim(0, max_mean)
 axes[2].set_ylabel('Nb of victims')
+print(f"\n Saved victims (mean abs value)")
+print(f"{vs_means.to_string(index=True, header=True)}")
 
 # Plot for relative values of Vs (saved)
 rel_means = [value['mean'] for value in rel_vs.values()]
@@ -114,16 +122,23 @@ axes[3].bar(vs_means.index, rel_means, yerr=rel_std_dev, capsize=5, color='green
 axes[3].set_title('Mean number of saved victims per severity (%)')
 axes[3].set_ylim(0, 1)
 axes[3].set_ylabel('Nb of victims(%)')
+print(f"\n Saved victims (mean abs value)")
+for i in range(len(rel_means)):    
+    print(f"Vs{i+1:1d}: {rel_means[i]*100:.2f}%")
 
 ### Plot for 'Veg' and 'Vsg' columns
 veg_vsg_means = [veg_mean, vsg_mean]
 veg_vsg_std = [veg_std, vsg_std]
 axes[4].bar(['Veg', 'Vsg'], veg_vsg_means, yerr=veg_vsg_std, capsize=5, color='orange', alpha=0.7)
+print(f"\nVeg and Vsg")
+print(f"Veg: {veg_mean:.3f}")
+print(f"Vsg: {vsg_mean:.3f}")
 
 ### Plot the source of data
 axes[5].axis('off')
 axes[5].text(0.05,0.75, results_file, ha="left", fontsize=10, transform=axes[5].transAxes)
 axes[5].text(0.05,0.50, df_descriptor.to_string(index=False, header=True), fontsize=10, transform=axes[5].transAxes)
+axes[5].text(0.05,0.25, f"Nb.of runs {len(df)}", fontsize=10, transform=axes[5].transAxes)
 
 plt.subplots_adjust(hspace=0.5)  # Adjust spacing between subplots
 plt.tight_layout(pad=3.0)
