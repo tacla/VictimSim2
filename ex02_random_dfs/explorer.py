@@ -12,6 +12,7 @@ from abc import ABC, abstractmethod
 from vs.abstract_agent import AbstAgent
 from vs.constants import VS
 from map import Map
+from state import State
 
 class Stack:
     def __init__(self):
@@ -28,6 +29,8 @@ class Stack:
         return len(self.items) == 0
 
 class Explorer(AbstAgent):
+    instance_count = 0  #Class variable to keep track of the count of instances
+
     def __init__(self, env, config_file, resc):
         """ Construtor do agente random on-line
         @param env: a reference to the environment 
@@ -36,6 +39,8 @@ class Explorer(AbstAgent):
         """
 
         super().__init__(env, config_file)
+        Explorer.instance_count += 1
+        self.id = Explorer.instance_count  #Unique id for the explorer
         self.walk_stack = Stack()  # a stack to store the movements
         self.set_state(VS.ACTIVE)  # explorer is active since the begin
         self.resc = resc           # reference to the rescuer agent
@@ -44,6 +49,18 @@ class Explorer(AbstAgent):
         self.map = Map()           # create a map for representing the environment
         self.victims = {}          # a dictionary of found victims: (seq): ((x,y), [<vs>])
                                    # the key is the seq number of the victim,(x,y) the position, <vs> the list of vital signals
+        self.action_order = {
+            'N' : 0,
+            'S' : 1,
+            'E' : 2,
+            'W' : 3,
+            'NO' : 4,
+            'NE' : 5,
+            'SO' : 6,
+            'SE' : 7
+        }
+        self.visited = []           #array of visited states
+        self.move_concluded = False #boolean to check if the movement was completed
 
         # put the current position - the base - in the map
         self.map.add((self.x, self.y), 1, VS.NO_VICTIM, self.check_walls_and_lim())
@@ -125,6 +142,31 @@ class Explorer(AbstAgent):
             self.y += dy
             #print(f"{self.NAME}: coming back at ({self.x}, {self.y}), rtime: {self.get_rtime()}")
         
+    def DFS_online(self):
+        if (self.x == 0 and self.y == 0):  #if the agent is in the base   
+            if self.id == 1:   #first agent's sequence of actions
+                actions = ["N","S","E","W","NO","NE","SO","SE"]
+            elif self.id == 2: #second agent's sequence of actions
+                actions = ["N","E","W","S","SO","NE","NO","SE"]
+            elif self.id == 3: #third agent's sequence of actions
+                actions = ["NE","E","S","SO","W","N","NO","SE"]
+            else:              #fourth agent's sequence of actions
+                actions = ["E","W","S","N","SE","S0","NO","SE"]
+
+            initial_state = State(actions,self.action_order)
+            self.visited.append(initial_state)  #add first state to the visited array
+            self.move_concluded = True
+            return self.action_order[actions[0]]  #return first action
+        else:
+            if (self.move_concluded):
+                
+
+
+
+
+
+
+
     def deliberate(self) -> bool:
         """ The agent chooses the next action. The simulator calls this
         method at each cycle. Must be implemented in every agent"""
