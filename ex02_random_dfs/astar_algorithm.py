@@ -3,12 +3,13 @@ from math import sqrt
 from vs.constants import VS
 
 class AStarExplorer(AStar):
-    def __init__(self, graph, start, goal, diagonal_cost, line_cost):
+    def __init__(self, graph, start, goal, diagonal_cost, line_cost, map):
         self.graph = graph
         self.start = start
         self.goal = goal
         self.diagonal_cost = diagonal_cost
         self.line_cost = line_cost
+        self.map = map
 
     def neighbors(self, node):
         x, y = node
@@ -19,10 +20,9 @@ class AStarExplorer(AStar):
         for nx, ny in neighbors:
             # Verifica se a posição está dentro dos limites do grafo
             if 0 <= nx < len(self.graph) and 0 <= ny < len(self.graph[0]):
-                # Verifica se a posição não é uma parede
-                # print("a posicao {},{} está dentro dos limites do grafo".format(nx,ny))
-                if self.graph[nx][ny] != VS.OBST_WALL:
-                    # print("a posicao {} do grafo nao contem obstaculo de valor: {}".format(self.graph[nx][ny], VS.OBST_WALL))
+                # Verifica se a posição não é uma parede e se esta no mapa
+                coordenada = (nx,ny)
+                if self.graph[nx][ny] != VS.WALL and self.map.in_map(coordenada):
                     valid_neighbors.append((nx, ny))
         print("vizinhos válidos de {} sao: {}".format(node, valid_neighbors))
         return valid_neighbors

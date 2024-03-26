@@ -192,14 +192,13 @@ class Explorer(AbstAgent):
 
     # Chama o algoritmo do a* para achar o menor caminho
     def find_shortest_path(self, graph, start, goal):
-        astar = AStarExplorer(graph, start, goal, self.COST_DIAG, self.COST_LINE)
+        astar = AStarExplorer(graph, start, goal, self.COST_DIAG, self.COST_LINE, self.map)
         path = list(astar.find_path())
         return path
 
     # Retorna um objeto adjacency_matrix[i][j], que vale 1 se há uma aresta entre os vértices i e j, e 0 caso contrário. 
     # Cada vértice na matriz corresponde a uma posição visitada pelo agente no mapa.
     def build_adjacency_matrix(self):
-        # Cria uma matriz de adjacências inicialmente preenchida com zeros
         adjacency_matrix = [[0] * len(self.map.map_data) for _ in range(len(self.map.map_data))]
 
         # Mapeia as coordenadas visitadas para seus índices na matriz
@@ -209,19 +208,19 @@ class Explorer(AbstAgent):
             coord_to_index[coord] = index
             index += 1
 
-        par = (1,1)
-        print("&&&&&&&&&&&&&&&******** na posicao 1,1 tem {}".format(self.map.get(par)))
         # Preenche a matriz de adjacências
         for coord, data in self.map.map_data.items():
+            #  0,0
             x, y = coord
             for dx in [-1, 0, 1]:
                 for dy in [-1, 0, 1]:
                     if dx == 0 and dy == 0:
                         continue  # Ignora a própria posição
                     neighbor_coord = (x + dx, y + dy)
-                    if neighbor_coord in self.map.map_data:
+                    # serao verificadas: (-1,-1), (-1,0), (-1,1), (0,-1), (0,1), (1,0), (1,1), (1,-1)
+                    if self.map.in_map(neighbor_coord):
                         # Se a vizinhança foi visitada e não é uma parede, atualize a matriz de adjacências
-                        if data != VS.WALL and self.map.map_data[neighbor_coord][0] != VS.WALL:
+                        if data[0] != VS.WALL and self.map.map_data[neighbor_coord][0] != VS.WALL:
                             adjacency_matrix[coord_to_index[coord]][coord_to_index[neighbor_coord]] = 1
 
         return adjacency_matrix
