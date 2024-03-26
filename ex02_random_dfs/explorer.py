@@ -220,7 +220,8 @@ class Explorer(AbstAgent):
                     # serao verificadas: (-1,-1), (-1,0), (-1,1), (0,-1), (0,1), (1,0), (1,1), (1,-1)
                     if self.map.in_map(neighbor_coord):
                         # Se a vizinhança foi visitada, atualize a matriz de adjacências
-                        adjacency_matrix[coord_to_index[coord]][coord_to_index[neighbor_coord]] = 1
+                        if data[0] != VS.WALL and self.map.map_data[neighbor_coord][0] != VS.WALL:
+                            adjacency_matrix[coord_to_index[coord]][coord_to_index[neighbor_coord]] = 1
 
         return adjacency_matrix
 
