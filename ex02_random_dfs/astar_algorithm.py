@@ -8,11 +8,22 @@ class AStarExplorer(AStar):
         self.goal = goal
 
     def neighbors(self, node):
+        # x, y = node
+        # # Define os vizinhos de um nó como as posições adjacentes que não são obstáculos
+        # neighbors = [(x + dx, y + dy) for dx in (-1, 0, 1) for dy in (-1, 0, 1) if (dx != 0 or dy != 0)]
+        # # Desconsidera vizinhos que são paredes ou fora do mapa
+        # valid_neighbors = [(nx, ny) for nx, ny in neighbors if 0 <= nx < len(self.graph) and 0 <= ny < len(self.graph[0]) and self.graph[nx][ny] != VS.OBST_WALL]
+        # return valid_neighbors
         x, y = node
         # Define os vizinhos de um nó como as posições adjacentes que não são obstáculos
         neighbors = [(x + dx, y + dy) for dx in (-1, 0, 1) for dy in (-1, 0, 1) if (dx != 0 or dy != 0)]
-        # precisa arrumar pra nao incluir um vizinho que é uma parede
-        valid_neighbors = [(nx, ny) for nx, ny in neighbors if 0 <= nx < len(self.graph) and 0 <= ny < len(self.graph[0]) and self.graph[nx][ny] != VS.OBST_WALL]
+        valid_neighbors = []
+        for nx, ny in neighbors:
+            # Verifica se a posição está dentro dos limites do grafo
+            if 0 <= nx < len(self.graph) and 0 <= ny < len(self.graph[0]):
+                # Verifica se a posição não é uma parede
+                if self.graph[nx][ny] != VS.OBST_WALL:
+                    valid_neighbors.append((nx, ny))
         return valid_neighbors
 
     def distance_between(self, n1, n2):
