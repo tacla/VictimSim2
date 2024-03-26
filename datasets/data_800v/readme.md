@@ -19,8 +19,6 @@ Autor: Cesar Augusto Tacla
 
 
 ### CONTAGENS
-São idênticas para os dois arquivos:  
-
 1=critico.....: 119 (14.875%)  
 2=instável....: 455 (56.875%)  
 3=pot. estável: 211 (26.375%)  
