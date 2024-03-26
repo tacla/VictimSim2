@@ -28,11 +28,6 @@ class AStarExplorer(AStar):
         return valid_neighbors
 
     def distance_between(self, n1, n2):
-        # Calcula a distância entre dois nós como a distância euclidiana
-        # x1, y1 = n1
-        # x2, y2 = n2
-        # return sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-
         x1, y1 = n1
         x2, y2 = n2
         dx = abs(x2 - x1)

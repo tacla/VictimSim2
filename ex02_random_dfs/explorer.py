@@ -210,14 +210,12 @@ class Explorer(AbstAgent):
 
         # Preenche a matriz de adjacências
         for coord, data in self.map.map_data.items():
-            #  0,0
             x, y = coord
             for dx in [-1, 0, 1]:
                 for dy in [-1, 0, 1]:
                     if dx == 0 and dy == 0:
                         continue  # Ignora a própria posição
                     neighbor_coord = (x + dx, y + dy)
-                    # serao verificadas: (-1,-1), (-1,0), (-1,1), (0,-1), (0,1), (1,0), (1,1), (1,-1)
                     if self.map.in_map(neighbor_coord):
                         # Se a vizinhança foi visitada, atualize a matriz de adjacências
                         if data[0] != VS.WALL and self.map.map_data[neighbor_coord][0] != VS.WALL:
