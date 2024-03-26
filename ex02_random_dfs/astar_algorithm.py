@@ -18,12 +18,11 @@ class AStarExplorer(AStar):
         neighbors = [(x + dx, y + dy) for dx in (-1, 0, 1) for dy in (-1, 0, 1) if (dx != 0 or dy != 0)]
         valid_neighbors = []
         for nx, ny in neighbors:
-            # Verifica se a posição está dentro dos limites do grafo
-            if 0 <= nx < len(self.graph) and 0 <= ny < len(self.graph[0]):
-                # Verifica se a posição não é uma parede e se esta no mapa
-                coordenada = (nx,ny)
-                if self.graph[nx][ny] != VS.WALL and self.map.in_map(coordenada):
-                    valid_neighbors.append((nx, ny))
+            # Verifica se o vizinho esta no mapa, ou seja, se foi visitado
+            # isso garante que ele nao é nem um obstaculo, nem uma parede
+            coordenada = (nx,ny)
+            if self.graph[nx][ny] != VS.WALL and self.map.in_map(coordenada):
+                valid_neighbors.append((nx, ny))
         print("vizinhos válidos de {} sao: {}".format(node, valid_neighbors))
         return valid_neighbors
 
