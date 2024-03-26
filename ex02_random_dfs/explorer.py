@@ -145,7 +145,31 @@ class Explorer(AbstAgent):
             self.x += dx
             self.y += dy
             print(f"{self.NAME}: coming back at ({self.x}, {self.y}), rtime: {self.get_rtime()}")
+        
+    def DFS_online(self):
+        if (self.x == 0 and self.y == 0):  #if the agent is in the base   
+            if self.id == 1:   #first agent's sequence of actions
+                actions = ["N","S","E","W","NO","NE","SO","SE"]
+            elif self.id == 2: #second agent's sequence of actions
+                actions = ["N","E","W","S","SO","NE","NO","SE"]
+            elif self.id == 3: #third agent's sequence of actions
+                actions = ["NE","E","S","SO","W","N","NO","SE"]
+            else:              #fourth agent's sequence of actions
+                actions = ["E","W","S","N","SE","S0","NO","SE"]
 
+            initial_state = State(actions,self.action_order)
+            self.visited.append(initial_state)  #add first state to the visited array
+            self.move_concluded = True
+            return self.action_order[actions[0]]  #return first action
+        else:
+            return
+            # if (self.move_concluded):
+
+# **************
+#  A-star
+# *************
+
+    # Chama o algoritmo do a* para achar o menor caminho
     def find_shortest_path(self, graph, start, goal):
         astar = AStarExplorer(graph, start, goal)
         path = list(astar.find_path())
@@ -177,25 +201,6 @@ class Explorer(AbstAgent):
                         adjacency_matrix[coord_to_index[coord]][coord_to_index[neighbor_coord]] = 1
 
         return adjacency_matrix
-        
-    def DFS_online(self):
-        if (self.x == 0 and self.y == 0):  #if the agent is in the base   
-            if self.id == 1:   #first agent's sequence of actions
-                actions = ["N","S","E","W","NO","NE","SO","SE"]
-            elif self.id == 2: #second agent's sequence of actions
-                actions = ["N","E","W","S","SO","NE","NO","SE"]
-            elif self.id == 3: #third agent's sequence of actions
-                actions = ["NE","E","S","SO","W","N","NO","SE"]
-            else:              #fourth agent's sequence of actions
-                actions = ["E","W","S","N","SE","S0","NO","SE"]
-
-            initial_state = State(actions,self.action_order)
-            self.visited.append(initial_state)  #add first state to the visited array
-            self.move_concluded = True
-            return self.action_order[actions[0]]  #return first action
-        else:
-            return
-            # if (self.move_concluded):
 
     def deliberate(self) -> bool:
         """ The agent chooses the next action. The simulator calls this
