@@ -194,14 +194,8 @@ class Explorer(AbstAgent):
             self.move_concluded = True
             return self.action_order[actions[0]]  #return first action
         else:
-            if (self.move_concluded):
-                
-
-
-
-
-
-
+            return
+            # if (self.move_concluded):
 
     def deliberate(self) -> bool:
         """ The agent chooses the next action. The simulator calls this
