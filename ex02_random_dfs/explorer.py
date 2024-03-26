@@ -188,7 +188,7 @@ class Explorer(AbstAgent):
         print(shortest_path)
         
         # Verificar se o caminho foi encontrado
-        if shortest_path is not None:
+        if len(shortest_path) >= 2:
             # O próximo movimento será a próxima posição no caminho mais curto
             print("agente explorador esta na posicao: ")
             print(shortest_path[0])
