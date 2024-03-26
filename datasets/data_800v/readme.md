@@ -8,14 +8,14 @@ Autor: Cesar Augusto Tacla
 - pSist: pressão sistólica; `Real [5, 22]`
 - pDiast: pressão diastólica; `Real [0, 15]`
 - qPA: qualidade da pressão arterial (gerado a partir de pSist e pDiast); Real [-10, 10] sendo -10 a pior qualidade e +10, a melhor.
-- pulso: pulsação; `Real [0, 200] BPM`
+- pulso: pulsação por minuto; `Real [0, 200]`
 - fResp: frequência respiratória por minuto; `Real [0, 22]`  
 - grav: gravidade da vítima de 0 a 100, sendo 100 a MENOS GRAVE; `Real [0, 100]`
 - label: 1=CRÍTICO 2=INSTÁVEL 3=POTENCIALMENTE INSTÁVEL 4=ESTÁVEL; `Inteiro [1, 4]`
 
 ## ARQUIVOS 
 1) env_vital_signals.txt  
-   Atributos: [id, pSist, pDiast, qPA, pulso, fResp, grav, label]
+   Atributos: `id, pSist, pDiast, qPA, pulso, fResp, grav, label`
 
 
 ### CONTAGENS
