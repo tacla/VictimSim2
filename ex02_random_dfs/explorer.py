@@ -47,21 +47,32 @@ class Explorer(AbstAgent):
         self.resc = resc           # reference to the rescuer agent
         self.x = 0                 # current x position relative to the origin 0
         self.y = 0                 # current y position relative to the origin 0
+        self.previous_x = 0        # previous x position relative to the origin 0
+        self.previous_y = 0        # previous y position relative to the origin 0
         self.map = Map()           # create a map for representing the environment
         self.victims = {}          # a dictionary of found victims: (seq): ((x,y), [<vs>])
                                    # the key is the seq number of the victim,(x,y) the position, <vs> the list of vital signals
         self.action_order = {
-            'N' : 0,
-            'S' : 1,
-            'E' : 2,
-            'W' : 3,
-            'NO' : 4,
-            'NE' : 5,
-            'SO' : 6,
-            'SE' : 7
+            'N': 0,
+            'NE': 1,
+            'E': 2,
+            'SE': 3,
+            'S': 4,
+            'SO': 5,
+            'W': 6,
+            'NO': 7,
         }
-        self.visited = []           #array of visited states
-        self.move_concluded = False #boolean to check if the movement was completed
+        self.unbacktracked = {}
+        self.untried = {}
+
+        if self.id == 1:   #first agent's sequence of actions
+            self.actions = ["N","S","E","W","NO","NE","SO","SE"]
+        elif self.id == 2: #second agent's sequence of actions
+            self.actions = ["N","E","W","S","SO","NE","NO","SE"]
+        elif self.id == 3: #third agent's sequence of actions
+            self.actions = ["NE","E","S","SO","W","N","NO","SE"]
+        else:              #fourth agent's sequence of actions
+            self.actions = ["E","W","S","N","SE","S0","NO","SE"]
 
         # put the current position - the base - in the map
         self.map.add((self.x, self.y), 1, VS.NO_VICTIM, self.check_walls_and_lim())
@@ -75,8 +86,8 @@ class Explorer(AbstAgent):
     
         # Loop until a CLEAR position is found
         while True:
-            # Get a random direction
-            direction = random.randint(0, 7)
+            # Get a direction from the DFS algorithm
+            direction = self.DFS_online()
             # Check if the corresponding position in walls_and_lim is CLEAR
             if obstacles[direction] == VS.CLEAR:
                 return Explorer.AC_INCR[direction]
@@ -107,7 +118,9 @@ class Explorer(AbstAgent):
 
             # update the agent's position relative to the origin
             self.x += dx
-            self.y += dy          
+            self.y += dy
+
+            self.visited.append((self.x,self.y))  #add current position (tuple) to the visited states array          
 
             # Check for victims
             seq = self.check_for_victim()
@@ -147,24 +160,33 @@ class Explorer(AbstAgent):
             print(f"{self.NAME}: coming back at ({self.x}, {self.y}), rtime: {self.get_rtime()}")
         
     def DFS_online(self):
-        if (self.x == 0 and self.y == 0):  #if the agent is in the base   
-            if self.id == 1:   #first agent's sequence of actions
-                actions = ["N","S","E","W","NO","NE","SO","SE"]
-            elif self.id == 2: #second agent's sequence of actions
-                actions = ["N","E","W","S","SO","NE","NO","SE"]
-            elif self.id == 3: #third agent's sequence of actions
-                actions = ["NE","E","S","SO","W","N","NO","SE"]
-            else:              #fourth agent's sequence of actions
-                actions = ["E","W","S","N","SE","S0","NO","SE"]
-
-            initial_state = State(actions,self.action_order)
-            self.visited.append(initial_state)  #add first state to the visited array
-            self.move_concluded = True
-            return self.action_order[actions[0]]  #return first action
+        if (self.x, self.y) not in self.untried.keys(): #the stack for untried was not created for this state
+            self.untried[(self.x, self.y)] = self.actions  #add possible actions to the untried stack
+        if (self.x, self.y) not in self.unbacktracked.keys(): #the stack for unbacktracked was not created for this state
+            self.unbacktracked[(self.x, self.y)] = [(self.previous_x, self.previous_y)]  #add previous state to the unbacktracked stack 
+        if (len(self.untried[(self.x, self.y)])) == 0:  #no more actions available
+            next_x, next_y = self.unbacktracked[(self.x, self.y)].pop()  #new coords are from the previous state (go back)
+            dx = self.x - next_x
+            dy = self.y - next_y
+            direction = 0
+            for key,val in Explorer.AC_INCR.items():  #find the direction the agent must go to return to previous state
+                if val == (dx,dy):
+                    direction = key
+            self.previous_x = self.x
+            self.previous_y = self.y
+            return direction
         else:
-            return
-            # if (self.move_concluded):
-
+            next_x = self.x +  Explorer.AC_INCR[self.action_order[self.untried[(self.x, self.y)][-1]]][0]
+            next_y = self.y +  Explorer.AC_INCR[self.action_order[self.untried[(self.x, self.y)][-1]]][1]
+            if ((next_x, next_y) not in self.map_data): #next state was not visited
+                self.previous_x = self.x
+                self.previous_y = self.y
+                return self.action_order[self.untried[(self.x, self.y)].pop()] #return action and remove it of the stack
+            else: #next state was already visited
+                self.untried[(self.x, self.y)].pop()  #remove action from stack
+                self.previous_x = self.x
+                self.previous_y = self.y
+                return self.action_order[self.untried[(self.x, self.y)].pop()] #return next action and remove it of the stack
 # **************
 #  A-star
 # *************
