@@ -13,7 +13,6 @@ from vs.abstract_agent import AbstAgent
 from vs.constants import VS
 from astar_algorithm import AStarExplorer
 from map import Map
-from state import State
 
 class Stack:
     def __init__(self):
@@ -72,7 +71,7 @@ class Explorer(AbstAgent):
         elif self.id == 3: #third agent's sequence of actions
             self.actions = ["NE","E","S","SO","W","N","NO","SE"]
         else:              #fourth agent's sequence of actions
-            self.actions = ["E","W","S","N","SE","S0","NO","SE"]
+            self.actions = ["E","W","S","N","SE","SO","NO","SE"]
 
         # put the current position - the base - in the map
         self.map.add((self.x, self.y), 1, VS.NO_VICTIM, self.check_walls_and_lim())
@@ -120,8 +119,6 @@ class Explorer(AbstAgent):
             self.x += dx
             self.y += dy
 
-            self.visited.append((self.x,self.y))  #add current position (tuple) to the visited states array          
-
             # Check for victims
             seq = self.check_for_victim()
             if seq != VS.NO_VICTIM:
@@ -161,9 +158,10 @@ class Explorer(AbstAgent):
         
     def DFS_online(self):
         if (self.x, self.y) not in self.untried.keys(): #the stack for untried was not created for this state
-            self.untried[(self.x, self.y)] = self.actions  #add possible actions to the untried stack
+            self.untried[(self.x, self.y)] = self.actions.copy()  #add possible actions to the untried stack
         if (self.x, self.y) not in self.unbacktracked.keys(): #the stack for unbacktracked was not created for this state
-            self.unbacktracked[(self.x, self.y)] = [(self.previous_x, self.previous_y)]  #add previous state to the unbacktracked stack 
+            if self.x != 0 or self.y != 0:
+                self.unbacktracked[(self.x, self.y)] = [(self.previous_x, self.previous_y)]  #add previous state to the unbacktracked stack 
         if (len(self.untried[(self.x, self.y)])) == 0:  #no more actions available
             next_x, next_y = self.unbacktracked[(self.x, self.y)].pop()  #new coords are from the previous state (go back)
             dx = self.x - next_x
@@ -178,15 +176,33 @@ class Explorer(AbstAgent):
         else:
             next_x = self.x +  Explorer.AC_INCR[self.action_order[self.untried[(self.x, self.y)][-1]]][0]
             next_y = self.y +  Explorer.AC_INCR[self.action_order[self.untried[(self.x, self.y)][-1]]][1]
-            if ((next_x, next_y) not in self.map_data): #next state was not visited
+            if ((next_x, next_y) not in self.map.map_data): #next state was not visited
+                if (self.x, self.y) in self.unbacktracked.keys():
+                    self.unbacktracked[(self.x, self.y)].append((self.previous_x,self.previous_y))
                 self.previous_x = self.x
                 self.previous_y = self.y
                 return self.action_order[self.untried[(self.x, self.y)].pop()] #return action and remove it of the stack
             else: #next state was already visited
                 self.untried[(self.x, self.y)].pop()  #remove action from stack
-                self.previous_x = self.x
-                self.previous_y = self.y
-                return self.action_order[self.untried[(self.x, self.y)].pop()] #return next action and remove it of the stack
+                if (len(self.untried[(self.x, self.y)])) == 0:   #no more actions available
+                    next_x, next_y = self.unbacktracked[(self.x, self.y)].pop()  #new coords are from the previous state (go back)
+                    dx = self.x - next_x
+                    dy = self.y - next_y
+                    direction = 0
+                    for key,val in Explorer.AC_INCR.items():  #find the direction the agent must go to return to previous state
+                        if val == (dx,dy):
+                            direction = key
+                    if (self.x, self.y) in self.unbacktracked.keys():
+                        self.unbacktracked[(self.x, self.y)].append((self.previous_x,self.previous_y))
+                    self.previous_x = self.x
+                    self.previous_y = self.y
+                    return direction
+                else:
+                    if (self.x, self.y) in self.unbacktracked.keys():
+                        self.unbacktracked[(self.x, self.y)].append((self.previous_x,self.previous_y))
+                    self.previous_x = self.x
+                    self.previous_y = self.y
+                    return self.action_order[self.untried[(self.x, self.y)].pop()] #return next action and remove it of the stack
     def deliberate(self) -> bool:
         """ The agent chooses the next action. The simulator calls this
         method at each cycle. Must be implemented in every agent"""
