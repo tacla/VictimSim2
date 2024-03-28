@@ -187,43 +187,6 @@ class Explorer(AbstAgent):
                 self.previous_x = self.x
                 self.previous_y = self.y
                 return self.action_order[self.untried[(self.x, self.y)].pop()] #return next action and remove it of the stack
-# **************
-#  A-star
-# *************
-
-    # Chama o algoritmo do a* para achar o menor caminho
-    def find_shortest_path(self, graph, start, goal):
-        astar = AStarExplorer(graph, start, goal)
-        path = list(astar.find_path())
-        return path
-
-    # Retorna um objeto adjacency_matrix[i][j], que vale 1 se há uma aresta entre os vértices i e j, e 0 caso contrário. 
-    # Cada vértice na matriz corresponde a uma posição visitada pelo agente no mapa.
-    def build_adjacency_matrix(self):
-        # Cria uma matriz de adjacências inicialmente preenchida com zeros
-        adjacency_matrix = [[0] * len(self.map.map_data) for _ in range(len(self.map.map_data))]
-
-        # Mapeia as coordenadas visitadas para seus índices na matriz
-        coord_to_index = {}
-        index = 0
-        for coord in self.map.map_data.keys():
-            coord_to_index[coord] = index
-            index += 1
-
-        # Preenche a matriz de adjacências
-        for coord, data in self.map.map_data.items():
-            x, y = coord
-            for dx in [-1, 0, 1]:
-                for dy in [-1, 0, 1]:
-                    if dx == 0 and dy == 0:
-                        continue  # Ignora a própria posição
-                    neighbor_coord = (x + dx, y + dy)
-                    if neighbor_coord in self.map.map_data:
-                        # Se a vizinhança foi visitada, atualize a matriz de adjacências
-                        adjacency_matrix[coord_to_index[coord]][coord_to_index[neighbor_coord]] = 1
-
-        return adjacency_matrix
-
     def deliberate(self) -> bool:
         """ The agent chooses the next action. The simulator calls this
         method at each cycle. Must be implemented in every agent"""
@@ -242,6 +205,47 @@ class Explorer(AbstAgent):
             self.resc.go_save_victims(self.map, self.victims)
             return False
 
+        return self.come_back_with_astar()
+        
+
+# **************
+#  A-star
+# *************
+
+    # Chama o algoritmo do a* para achar o menor caminho
+    def find_shortest_path(self, graph, start, goal):
+        astar = AStarExplorer(graph, start, goal, self.COST_DIAG, self.COST_LINE, self.map)
+        path = list(astar.find_path())
+        return path
+
+    # Retorna um objeto adjacency_matrix[i][j], que vale 1 se há uma aresta entre os vértices i e j, e 0 caso contrário. 
+    # Cada vértice na matriz corresponde a uma posição visitada pelo agente no mapa.
+    def build_adjacency_matrix(self):
+        adjacency_matrix = [[0] * len(self.map.map_data) for _ in range(len(self.map.map_data))]
+
+        # Mapeia as coordenadas visitadas para seus índices na matriz
+        coord_to_index = {}
+        index = 0
+        for coord in self.map.map_data.keys():
+            coord_to_index[coord] = index
+            index += 1
+
+        # Preenche a matriz de adjacências
+        for coord, data in self.map.map_data.items():
+            x, y = coord
+            for dx in [-1, 0, 1]:
+                for dy in [-1, 0, 1]:
+                    if dx == 0 and dy == 0:
+                        continue  # Ignora a própria posição
+                    neighbor_coord = (x + dx, y + dy)
+                    if self.map.in_map(neighbor_coord):
+                        # Se a vizinhança foi visitada, atualize a matriz de adjacências
+                        if data[0] != VS.WALL and self.map.map_data[neighbor_coord][0] != VS.WALL:
+                            adjacency_matrix[coord_to_index[coord]][coord_to_index[neighbor_coord]] = 1
+
+        return adjacency_matrix
+
+    def come_back_with_astar(self):
         # monta grafo com as posicoes exploradas (o mapa) usando matriz de adjacencias
         adjacency_matrix = self.build_adjacency_matrix()
 
