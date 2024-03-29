@@ -19,8 +19,8 @@ import numpy as np
 from sklearn.metrics import confusion_matrix, classification_report, accuracy_score, mean_squared_error
 
 # Input CSV file names
-file_target = 'grav_class_target.txt'
-file_predict = 'grav_class_saved.txt'
+file_target = 'target.txt'
+file_predict = 'pred.txt'
 target_len = 0
 predict_len = 0
 
