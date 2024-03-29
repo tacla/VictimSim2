@@ -7,7 +7,7 @@ Autor: Cesar Augusto Tacla
 - id: número sequencial; Inteiro `[0, 799]`
 - pSist: pressão sistólica; `Real [5, 22]`
 - pDiast: pressão diastólica; `Real [0, 15]`
-- qPA: qualidade da pressão arterial (gerado a partir de pSist e pDiast); Real [-10, 10] sendo -10 a pior qualidade e +10, a melhor.
+- qPA: qualidade da pressão arterial (gerado a partir de pSist e pDiast); Real [-10, 10] sendo -10 e 10 as piores qualidades e 0, a melhor.
 - pulso: pulsação por minuto; `Real [0, 200]`
 - fResp: frequência respiratória por minuto; `Real [0, 22]`  
 - grav: gravidade da vítima de 0 a 100, sendo 100 a MENOS GRAVE; `Real [0, 100]`
