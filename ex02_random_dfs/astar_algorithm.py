@@ -23,7 +23,6 @@ class AStarExplorer(AStar):
             coordenada = (nx,ny)
             if self.graph[nx][ny] != VS.WALL and self.map.in_map(coordenada):
                 valid_neighbors.append((nx, ny))
-        print("vizinhos válidos de {} sao: {}".format(node, valid_neighbors))
         return valid_neighbors
 
     def distance_between(self, n1, n2):

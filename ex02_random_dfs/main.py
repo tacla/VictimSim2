@@ -30,10 +30,10 @@ def main(data_folder_name):
     exp2 = Explorer(env, explorer_file, resc)
     exp3 = Explorer(env, explorer_file, resc)
     exp4 = Explorer(env, explorer_file, resc)
-    env.add_agent(exp)
-    env.add_agent(exp2)
-    env.add_agent(exp3)
-    env.add_agent(exp4)
+    # env.add_agent(exp)
+    # env.add_agent(exp2)
+    # env.add_agent(exp3)
+    # env.add_agent(exp4)
 
     # Run the environment simulator
     env.run()

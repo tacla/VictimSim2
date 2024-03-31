@@ -62,7 +62,8 @@ class Explorer(AbstAgent):
             'NO': 7,
         }
         self.unbacktracked = {}
-        self.untried = {}
+        self.untried = {}          # dicionario de direcoes ainda nao exploradas por um posicao (x,y)
+                                   # (x,y) , [0, 1, 2, 3, 4, 5, 6, 7]
 
         if self.id == 1:   #first agent's sequence of actions
             self.actions = ["N","S","E","W","NO","NE","SO","SE"]
@@ -71,15 +72,12 @@ class Explorer(AbstAgent):
         elif self.id == 3: #third agent's sequence of actions
             self.actions = ["NE","E","S","SO","W","N","NO","SE"]
         else:              #fourth agent's sequence of actions
-            self.actions = ["E","W","S","N","SE","SO","NO","SE"]
+            self.actions = ["E","W","S","N","SE","SO","NO","NE"]
 
         # put the current position - the base - in the map
         self.map.add((self.x, self.y), 1, VS.NO_VICTIM, self.check_walls_and_lim())
 
     def get_next_position(self):
-        """ Randomically, gets the next position that can be explored (no wall and inside the grid)
-            There must be at least one CLEAR position in the neighborhood, otherwise it loops forever.
-        """
         # Check the neighborhood walls and grid limits
         obstacles = self.check_walls_and_lim()
     
@@ -87,13 +85,21 @@ class Explorer(AbstAgent):
         while True:
             # Get a direction from the DFS algorithm
             direction = self.DFS_online()
-            # Check if the corresponding position in walls_and_lim is CLEAR
+        # Check if the corresponding position in walls_and_lim is CLEAR
             if obstacles[direction] == VS.CLEAR:
                 return Explorer.AC_INCR[direction]
         
     def explore(self):
         # get an random increment for x and y       
-        dx, dy = self.get_next_position()
+        next_position = self.get_next_position()
+
+        # Check if next_position is None
+        if next_position is None:
+            return  # Exit explore() if no available actions
+
+        # verificar se ja nao visitou essa posicao em MAP ???
+
+        dx, dy = next_position
 
         # Moves the body to another position
         rtime_bef = self.get_rtime()
@@ -101,7 +107,7 @@ class Explorer(AbstAgent):
         rtime_aft = self.get_rtime()
 
         # Test the result of the walk action
-        # Should never bump, but for safe functionning let's test
+        # Should never bump, but for safe functioning let's test
         if result == VS.BUMPED:
             # update the map with the wall
             print("******")
@@ -157,7 +163,31 @@ class Explorer(AbstAgent):
             print(f"{self.NAME}: coming back at ({self.x}, {self.y}), rtime: {self.get_rtime()}")
         
     def DFS_online(self):
-        if (self.x, self.y) not in self.untried.keys(): #the stack for untried was not created for this state
+        pos_atual = (self.x, self.y)
+        # se a posicao atual nao esta no dicionario untried
+        if pos_atual not in self.untried:
+            #   adiciona a posicao atual no untried com suas 8 opcoes
+            self.untried[pos_atual] = list(range(8))
+
+        # transformando as direcoes do agente atual em numeros de 0 a 7
+        lista_direcoes_agente = [self.action_order[action] for action in self.actions]
+        # se todas as direcoes possiveis dessa posicao ja foram exploradas
+        if all(action not in lista_direcoes_agente for action in self.untried.get(pos_atual, [])):
+            # coloca todas de novo pra explorar (unbacktracked??)
+            self.untried[pos_atual] = lista_direcoes_agente
+
+        #   verifica qual a ordem de direcoes desse agente e pega a primeira que der match no array
+        #   correspondente da posicao atual do dicionario
+        for direcao in lista_direcoes_agente:
+            if direcao in self.untried[pos_atual]:
+                # retira esse valor das direcoes para essa posicao     
+                self.untried[pos_atual].remove(direcao)
+                # retorna a direcao
+                return direcao
+    
+    """
+    antigo DFS online
+if (self.x, self.y) not in self.untried.keys(): #the stack for untried was not created for this state
             self.untried[(self.x, self.y)] = self.actions.copy()  #add possible actions to the untried stack
         if (self.x, self.y) not in self.unbacktracked.keys(): #the stack for unbacktracked was not created for this state
             if self.x != 0 or self.y != 0:
@@ -203,6 +233,8 @@ class Explorer(AbstAgent):
                     self.previous_x = self.x
                     self.previous_y = self.y
                     return self.action_order[self.untried[(self.x, self.y)].pop()] #return next action and remove it of the stack
+    """
+    
     def deliberate(self) -> bool:
         """ The agent chooses the next action. The simulator calls this
         method at each cycle. Must be implemented in every agent"""
@@ -267,17 +299,11 @@ class Explorer(AbstAgent):
 
         # Uso do A* para achar o caminho mais curto de volta
         shortest_path = self.find_shortest_path(adjacency_matrix, (self.x, self.y), (0, 0))
-        print("************************** caminho mais curto para explorador voltar:")
-        print(shortest_path)
         
         # Verificar se o caminho foi encontrado
         if len(shortest_path) >= 2:
             # O próximo movimento será a próxima posição no caminho mais curto
-            print("agente explorador esta na posicao: ")
-            print(shortest_path[0])
-            print("proxima posicao: ")
             next_position = shortest_path[1]  # A primeira posição é a atual
-            print(next_position)
             dx = next_position[0] - self.x
             dy = next_position[1] - self.y
 
