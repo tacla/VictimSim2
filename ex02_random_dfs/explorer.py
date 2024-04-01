@@ -65,8 +65,10 @@ class Explorer(AbstAgent):
             'W': 6,
             'NO': 7,
         }
-        self.backtracked = {}
-        self.backtracked_loop = {}  # dicionario auxiliar para evitar o loop da oscilacao entre duas posicoes
+        self.backtracked = {}      # dicionario de posicoes anteriores de dada posicao, exemplo {(1,1): [(0,0), (2,2)]}
+                                   # nesse caso, (2,2) é a posicao anterior mais recente a (1,1) e deve ser acessada se nao houver
+                                   # mais nenhuma direcao nao explorada a partir de (1,1)  
+                                   # Aqui usamos pilha para as posicoes anteriores, para fazer LIFO  
         self.untried = {}          # dicionario de direcoes ainda nao exploradas por um posicao (x,y)
                                    # (x,y) , [0, 1, 2, 3, 4, 5, 6, 7]
 
@@ -75,8 +77,8 @@ class Explorer(AbstAgent):
         elif self.id == 2: #second agent's sequence of actions
             self.actions = ["N","E","W","S","SO","NE","NO","SE"]
         elif self.id == 3: #third agent's sequence of actions
-            self.actions = ["SE","W","S","SO","E","N","NO","NE"]
-        else:              #fourth agent's sequence of actions - ta meio tonto
+            self.actions = ["NE","E","S","SO","W","N","NO","SE"]
+        else:              #fourth agent's sequence of actions
             self.actions = ["E","W","S","N","SE","SO","NO","NE"]
 
         # put the current position - the base - in the map
@@ -167,12 +169,12 @@ class Explorer(AbstAgent):
         
     def DFS_online(self):
         pos_atual = (self.x, self.y)
-        # se a posicao atual nao esta no dicionario untried
+        # Se a posição atual não está no dicionário untried
         if pos_atual not in self.untried:
-            #   adiciona a posicao atual no untried com suas 8 opcoes
+            # Adiciona a posição atual no untried com suas 8 opções
             self.untried[pos_atual] = list(range(8))
 
-        # recupera posicao anterior se possivel, iremos usar depois
+        # Recupera a posição anterior se possível, iremos usar depois
         pos_anterior = None
         if not self.walk_stack.is_empty():
             dx, dy = self.walk_stack.peek()
@@ -180,37 +182,42 @@ class Explorer(AbstAgent):
             dy = dy * -1
             pos_anterior = (self.x + dx, self.y + dy)
 
-        # transformando as direcoes do agente atual em numeros de 0 a 7
+        # Transformando as direções do agente atual em números de 0 a 7
         lista_direcoes_agente = [self.action_order[action] for action in self.actions]
-        
-        # se todas as direcoes possiveis dessa posicao ja foram exploradas
-        if all(action not in lista_direcoes_agente for action in self.untried.get(pos_atual, [])):            
-            # Adiciono, para a pilha de backtracked da proxima posicao, a posicao atual
-            proxima_pos = self.backtracked[pos_atual].pop()
-            # verifica se a posicao atual existe no dicionário backtracked
-            if proxima_pos in self.backtracked:
-                # Adiciona a pos_atual ao array associado à chave proxima_pos
-                self.backtracked[proxima_pos].append(pos_atual)
-            else:
-                # Se proxima_pos não existir no dicionário, cria uma nova entrada com pos_atual como o único elemento da lista
-                self.backtracked[proxima_pos] = [pos_atual]
 
-            # agora de fato move para a proxima posicao, que na vdd era a ultima adicionada em seu backtracked
-            direction = self.calcular_direcao(pos_atual, proxima_pos)
-            return direction
+        # Verifica se todas as direções possíveis dessa posição já foram exploradas
+        if all(action not in lista_direcoes_agente for action in self.untried.get(pos_atual, [])):
+            # Adiciona, para a pilha de backtracked da próxima posição, a posição atual
+            proxima_pos = None
+            if len(self.backtracked[pos_atual]) > 0:
+                proxima_pos = self.backtracked[pos_atual].pop()
+
+            if proxima_pos is not None: 
+                if proxima_pos != pos_anterior:
+                    # garante que nao entrou em loop
+                    if pos_atual in self.backtracked:
+                        self.backtracked[proxima_pos].append(pos_atual)
+                    else:
+                        self.backtracked[proxima_pos] = [pos_atual]
+
+                    direction = self.calcular_direcao(pos_atual, proxima_pos)
+                    return direction
+            
+            # se entrar em loop, sorteia outra posicao
+            return random.randint(0, 7)
 
         else:
-            #  verifica qual a ordem de direcoes desse agente e pega a primeira que der match no array
-            #  correspondente da posicao atual do dicionario
+            # Verifica qual a ordem de direções desse agente e pega a primeira que der match no array
+            # correspondente da posição atual do dicionário
             for direcao in lista_direcoes_agente:
                 if direcao in self.untried[pos_atual]:
-                    # retira esse valor das direcoes para essa posicao     
+                    # Retira esse valor das direções para essa posição     
                     self.untried[pos_atual].remove(direcao)
 
-                    # caso nao seja a primeira execucao
+                    # Caso não seja a primeira execução
                     if pos_anterior is not None:
-                        # Adiciona a posicao anterior na pilha de backtracked:
-                        # verifica se a posicao atual existe no dicionário backtracked
+                        # Adiciona a posição anterior na pilha de backtracked:
+                        # Verifica se a posição atual existe no dicionário backtracked
                         if pos_atual in self.backtracked:
                             # Adiciona a pos_anterior ao array associado à chave pos_atual
                             self.backtracked[pos_atual].append(pos_anterior)
@@ -218,8 +225,10 @@ class Explorer(AbstAgent):
                             # Se pos_atual não existir no dicionário, cria uma nova entrada com pos_anterior como o único elemento da lista
                             self.backtracked[pos_atual] = [pos_anterior]
 
-                    # retorna a direcao
+                    # Retorna a direção
                     return direcao
+
+
     
     def calcular_direcao(self, base, target):   
         # auxiliar para DFS online
