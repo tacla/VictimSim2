@@ -10,14 +10,14 @@ class Cluster():
 
     def cluster(self, victims):
         # Clustering using location and vital signs
-        victims = []
+        x_victims = []
         for victim_data in victims.values():
-            victims.append([victim_data[0][0]] + [victim_data[0][1]] + victim_data[1])
+            x_victims.append([victim_data[0][0]] + [victim_data[0][1]] + victim_data[1])
+        
         
         # we are going to use 4 clusters because we have 4 rescuer agents
         kmeans = KMeans(n_clusters=4, random_state=42)
-        kmeans.fit(X=victims)
-
+        kmeans.fit(X=x_victims)
         labels = kmeans.labels_
 
         i = 0 
