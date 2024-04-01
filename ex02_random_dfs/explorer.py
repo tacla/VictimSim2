@@ -24,6 +24,10 @@ class Stack:
     def pop(self):
         if not self.is_empty():
             return self.items.pop()
+    
+    def peek(self):
+        if not self.is_empty():
+            return self.items[-1]  # Acessa o último elemento da lista sem remove-lo
 
     def is_empty(self):
         return len(self.items) == 0
@@ -61,7 +65,8 @@ class Explorer(AbstAgent):
             'W': 6,
             'NO': 7,
         }
-        self.unbacktracked = {}
+        self.backtracked = {}
+        self.backtracked_loop = {}  # dicionario auxiliar para evitar o loop da oscilacao entre duas posicoes
         self.untried = {}          # dicionario de direcoes ainda nao exploradas por um posicao (x,y)
                                    # (x,y) , [0, 1, 2, 3, 4, 5, 6, 7]
 
@@ -70,8 +75,8 @@ class Explorer(AbstAgent):
         elif self.id == 2: #second agent's sequence of actions
             self.actions = ["N","E","W","S","SO","NE","NO","SE"]
         elif self.id == 3: #third agent's sequence of actions
-            self.actions = ["NE","E","S","SO","W","N","NO","SE"]
-        else:              #fourth agent's sequence of actions
+            self.actions = ["SE","W","S","SO","E","N","NO","NE"]
+        else:              #fourth agent's sequence of actions - ta meio tonto
             self.actions = ["E","W","S","N","SE","SO","NO","NE"]
 
         # put the current position - the base - in the map
@@ -110,8 +115,6 @@ class Explorer(AbstAgent):
         # Should never bump, but for safe functioning let's test
         if result == VS.BUMPED:
             # update the map with the wall
-            print("******")
-            print("achou uma parede em:")  
             print(self.x, self.y)  
             self.map.add((self.x + dx, self.y + dy), VS.OBST_WALL, VS.NO_VICTIM, self.check_walls_and_lim())
             #print(f"{self.NAME}: Wall or grid limit reached at ({self.x + dx}, {self.y + dy})")
@@ -169,71 +172,83 @@ class Explorer(AbstAgent):
             #   adiciona a posicao atual no untried com suas 8 opcoes
             self.untried[pos_atual] = list(range(8))
 
+        # recupera posicao anterior se possivel, iremos usar depois
+        pos_anterior = None
+        if not self.walk_stack.is_empty():
+            dx, dy = self.walk_stack.peek()
+            dx = dx * -1
+            dy = dy * -1
+            pos_anterior = (self.x + dx, self.y + dy)
+
         # transformando as direcoes do agente atual em numeros de 0 a 7
         lista_direcoes_agente = [self.action_order[action] for action in self.actions]
+        
         # se todas as direcoes possiveis dessa posicao ja foram exploradas
-        if all(action not in lista_direcoes_agente for action in self.untried.get(pos_atual, [])):
-            # coloca todas de novo pra explorar (unbacktracked??)
-            self.untried[pos_atual] = lista_direcoes_agente
+        if all(action not in lista_direcoes_agente for action in self.untried.get(pos_atual, [])):            
+            # Adiciono, para a pilha de backtracked da proxima posicao, a posicao atual
+            proxima_pos = self.backtracked[pos_atual].pop()
+            # verifica se a posicao atual existe no dicionário backtracked
+            if proxima_pos in self.backtracked:
+                # Adiciona a pos_atual ao array associado à chave proxima_pos
+                self.backtracked[proxima_pos].append(pos_atual)
+            else:
+                # Se proxima_pos não existir no dicionário, cria uma nova entrada com pos_atual como o único elemento da lista
+                self.backtracked[proxima_pos] = [pos_atual]
 
-        #   verifica qual a ordem de direcoes desse agente e pega a primeira que der match no array
-        #   correspondente da posicao atual do dicionario
-        for direcao in lista_direcoes_agente:
-            if direcao in self.untried[pos_atual]:
-                # retira esse valor das direcoes para essa posicao     
-                self.untried[pos_atual].remove(direcao)
-                # retorna a direcao
-                return direcao
-    
-    """
-    antigo DFS online
-if (self.x, self.y) not in self.untried.keys(): #the stack for untried was not created for this state
-            self.untried[(self.x, self.y)] = self.actions.copy()  #add possible actions to the untried stack
-        if (self.x, self.y) not in self.unbacktracked.keys(): #the stack for unbacktracked was not created for this state
-            if self.x != 0 or self.y != 0:
-                self.unbacktracked[(self.x, self.y)] = [(self.previous_x, self.previous_y)]  #add previous state to the unbacktracked stack 
-        if (len(self.untried[(self.x, self.y)])) == 0:  #no more actions available
-            next_x, next_y = self.unbacktracked[(self.x, self.y)].pop()  #new coords are from the previous state (go back)
-            dx = self.x - next_x
-            dy = self.y - next_y
-            direction = 0
-            for key,val in Explorer.AC_INCR.items():  #find the direction the agent must go to return to previous state
-                if val == (dx,dy):
-                    direction = key
-            self.previous_x = self.x
-            self.previous_y = self.y
+            # agora de fato move para a proxima posicao, que na vdd era a ultima adicionada em seu backtracked
+            direction = self.calcular_direcao(pos_atual, proxima_pos)
             return direction
+
         else:
-            next_x = self.x +  Explorer.AC_INCR[self.action_order[self.untried[(self.x, self.y)][-1]]][0]
-            next_y = self.y +  Explorer.AC_INCR[self.action_order[self.untried[(self.x, self.y)][-1]]][1]
-            if ((next_x, next_y) not in self.map.map_data): #next state was not visited
-                if (self.x, self.y) in self.unbacktracked.keys():
-                    self.unbacktracked[(self.x, self.y)].append((self.previous_x,self.previous_y))
-                self.previous_x = self.x
-                self.previous_y = self.y
-                return self.action_order[self.untried[(self.x, self.y)].pop()] #return action and remove it of the stack
-            else: #next state was already visited
-                self.untried[(self.x, self.y)].pop()  #remove action from stack
-                if (len(self.untried[(self.x, self.y)])) == 0:   #no more actions available
-                    next_x, next_y = self.unbacktracked[(self.x, self.y)].pop()  #new coords are from the previous state (go back)
-                    dx = self.x - next_x
-                    dy = self.y - next_y
-                    direction = 0
-                    for key,val in Explorer.AC_INCR.items():  #find the direction the agent must go to return to previous state
-                        if val == (dx,dy):
-                            direction = key
-                    if (self.x, self.y) in self.unbacktracked.keys():
-                        self.unbacktracked[(self.x, self.y)].append((self.previous_x,self.previous_y))
-                    self.previous_x = self.x
-                    self.previous_y = self.y
-                    return direction
-                else:
-                    if (self.x, self.y) in self.unbacktracked.keys():
-                        self.unbacktracked[(self.x, self.y)].append((self.previous_x,self.previous_y))
-                    self.previous_x = self.x
-                    self.previous_y = self.y
-                    return self.action_order[self.untried[(self.x, self.y)].pop()] #return next action and remove it of the stack
-    """
+            #  verifica qual a ordem de direcoes desse agente e pega a primeira que der match no array
+            #  correspondente da posicao atual do dicionario
+            for direcao in lista_direcoes_agente:
+                if direcao in self.untried[pos_atual]:
+                    # retira esse valor das direcoes para essa posicao     
+                    self.untried[pos_atual].remove(direcao)
+
+                    # caso nao seja a primeira execucao
+                    if pos_anterior is not None:
+                        # Adiciona a posicao anterior na pilha de backtracked:
+                        # verifica se a posicao atual existe no dicionário backtracked
+                        if pos_atual in self.backtracked:
+                            # Adiciona a pos_anterior ao array associado à chave pos_atual
+                            self.backtracked[pos_atual].append(pos_anterior)
+                        else:
+                            # Se pos_atual não existir no dicionário, cria uma nova entrada com pos_anterior como o único elemento da lista
+                            self.backtracked[pos_atual] = [pos_anterior]
+
+                    # retorna a direcao
+                    return direcao
+    
+    def calcular_direcao(self, base, target):   
+        # auxiliar para DFS online
+        x_base, y_base = base
+        x_target, y_target = target
+
+        diff_x = x_target - x_base
+        diff_y = y_target - y_base
+
+        if diff_y == 0:
+            if diff_x == 1:
+                return 2
+            elif diff_x == -1:
+                return 6
+        elif diff_x == 0:
+            if diff_y == 1:
+                return 0
+            elif diff_y == -1:
+                return 4
+        elif diff_y == 1:
+            if diff_x == 1:
+                return 1
+            elif diff_x == -1:
+                return 7
+        elif diff_y == -1:
+            if diff_x == 1:
+                return 3
+            elif diff_x == -1:
+                return 5
     
     def deliberate(self) -> bool:
         """ The agent chooses the next action. The simulator calls this
