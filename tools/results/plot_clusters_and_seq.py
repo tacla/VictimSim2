@@ -1,9 +1,8 @@
 ## Plot clusters and sequences of visited victims
-## Author: Cesar Tacla, April 2024
+## Author: Cesar Tacla, 02 April 2024
 ##
-## Read the obstacles file, the victims' coordinates file,
-## and a folder containing the clusters of victims to
-## the sequence of rescuing per cluster.
+## Read the obstacles file, the victims' coordinates file, and a folder containing 
+## the clusters of victims and the sequence of rescuing per cluster.
 ##
 ## Each cluster file has no header and the format for each line is as follows:
 ## victim id (int), column or x (int), row or y (int), severity (float), sev. label (int)
@@ -12,7 +11,7 @@
 ##
 ## This program prints the metrics per quadrant (victims and walls per quadrant)
 ##    upper left | upper right
-##    ------------------------
+##    -----------+------------
 ##    lower left | lower right
 ##
 ## Besides, it draws a rectangle around each cluster and the sequence of rescuing as lines
@@ -21,8 +20,8 @@
 ##
 ## To run this program you have to:
 ## - set the variables of the section Input files and folder
-## - set the flag REL_COORDINATES to True or False (when false, the program
-##   adds the base coordinantes to the coordinates of the cluster and seq files
+## - set the flag REL_COORDINATES to True or False (when false, the program adds the base coordinantes 
+##    to the coordinates of the cluster and seq files
 
 import pygame
 import os
@@ -30,7 +29,7 @@ import random
 import math
 import csv
 
-# Coorinantes of cluster and sequence files are absolute or relative to the base position?
+# Coordinates of cluster and sequence files are absolute to the base position?
 ABS_COORDINATES = True
 
 # Input files and folders
@@ -39,7 +38,7 @@ env_file = "env_config.txt"
 obst_file = "env_obst.txt"
 victims_file = "env_victims.txt"
 vital_signals_file = "env_vital_signals.txt"
-cluster_folder = "./clusters"                     # Directory containing cluster files 
+cluster_folder = "./clusters"                     # Directory containing cluster and seq files 
 
 # Define colors
 WHITE = (255, 255, 255)
