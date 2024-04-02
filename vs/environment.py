@@ -190,19 +190,22 @@ class Env:
         for x in range(self.dic["GRID_WIDTH"]):
             for y in range(self.dic["GRID_HEIGHT"]):
                 rect = pygame.Rect(x * cell_w, y * cell_h, cell_w, cell_h)
-                pygame.draw.rect(self.screen, VS.BLACK, rect, 1)
+                pygame.draw.rect(self.screen, (230,230,230), rect, 1)
 
                 if self.obst[x][y] == VS.OBST_WALL: # wall
                     rgb_int = VS.BLACK
                 else:
-                    perc = self.obst[x][y]/self.__max_obst
-                    lightness = (1 - perc) * lightness_clear + perc * lightness_dark
+                    if self.obst[x][y] == VS.OBST_NONE:
+                        rgb_int = VS.WHITE
+                    else:
+                        perc = self.obst[x][y]/self.__max_obst
+                        lightness = (1 - perc) * lightness_clear + perc * lightness_dark
 
-                    # convert HSL color to RGB
-                    rgb_color = colorsys.hls_to_rgb(hue / 360.0, lightness / 100.0, saturation / 100.0)
+                        # convert HSL color to RGB
+                        rgb_color = colorsys.hls_to_rgb(hue / 360.0, lightness / 100.0, saturation / 100.0)
                     
-                    # Convert RGB values to integers in the range [0, 255]
-                    rgb_int = tuple(int(c * 255) for c in rgb_color)
+                        # Convert RGB values to integers in the range [0, 255]
+                        rgb_int = tuple(int(c * 255) for c in rgb_color)
                     
                 obst_rect = pygame.Rect(x * cell_w + 1, y * cell_h + 1, cell_w - 2, cell_h - 2)
                 pygame.draw.rect(self.screen, rgb_int, obst_rect)                   
@@ -228,7 +231,7 @@ class Env:
         # Draw the victims
         v=0
         for victim in self.victims:
-            victim_rect = pygame.Rect(victim[0] * cell_w + 2, victim[1] * cell_h + 2, cell_w - 4, cell_h - 4)
+            victim_rect = pygame.Rect(victim[0] * cell_w + 1, victim[1] * cell_h + 1, cell_w - 1, cell_h - 1)
             c = self.severity[v]-1
             pygame.draw.ellipse(self.screen, VS.VIC_COLOR_LIST[c], victim_rect)
             if self.saved[v] != []:
