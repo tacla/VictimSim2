@@ -1,4 +1,5 @@
 from math import sqrt
+from random import randint
 
 from vs.constants import VS
 import heapq
@@ -57,25 +58,30 @@ class Map:
         return time
 
     def get_path(self, actual_pos, wanted_pos, explorer):
+        # print("")
+        # print(f"{actual_pos} atual = {actual_pos.visited} indo para: {wanted_pos} com {wanted_pos.visited}")
         open_list = []
+        best_for = {}
         closed_set = set()
 
         def heuristic(node):
-            return abs(node.coords[0] - wanted_pos.coords[0]) + abs(node.coords[1] - wanted_pos.coords[1])
+            return abs(node.coords[0] - wanted_pos.coords[0]) + abs(node.coords[1] - wanted_pos.coords[1]) * explorer.COST_LINE
 
-        actual_pos.g_score = 0
-        actual_pos.f_score = heuristic(actual_pos)
-        heapq.heappush(open_list, (actual_pos.f_score, actual_pos))
-        actual_pos.parent = None
+        g_score = {actual_pos: 0}
+        f_score = {actual_pos: heuristic(actual_pos)}
+        parent = {actual_pos: None}
+        heapq.heappush(open_list, (f_score[actual_pos], actual_pos))
 
         while open_list:
+            # print("open list")
             _, current_node = heapq.heappop(open_list)
 
             if current_node == wanted_pos:
+                # print("ACHEI AQUI DENTRRO")
                 path = []
                 while current_node:
                     path.append(current_node)
-                    current_node = current_node.parent
+                    current_node = parent[current_node]
                 return path[::-1]
 
             closed_set.add(current_node)
@@ -87,13 +93,14 @@ class Map:
                 dx, dy = current_node.coords[0] - neighbor.coords[0], current_node.coords[1] - neighbor.coords[1]
                 cost = explorer.COST_LINE if dx == 0 or dy == 0 else explorer.COST_DIAG
 
-                tentative_g_score = current_node.g_score + (neighbor.difficulty * cost)
-                if neighbor not in open_list or tentative_g_score < neighbor.g_score:
-                    neighbor.parent = current_node
-                    neighbor.g_score = tentative_g_score
-                    neighbor.f_score = tentative_g_score + heuristic(neighbor)
-                    if neighbor not in open_list:
-                        heapq.heappush(open_list, (neighbor.f_score, neighbor))
+                tentative_g_score = g_score[current_node] + (neighbor.difficulty * cost)
+                if neighbor not in open_list or tentative_g_score < g_score[neighbor]:
+                    parent[neighbor] = current_node
+                    g_score[neighbor] = tentative_g_score
+                    f_score[neighbor] = tentative_g_score + heuristic(neighbor)
+                    if neighbor not in open_list and (neighbor not in best_for or best_for[neighbor] > f_score[neighbor]):
+                        best_for[neighbor] = f_score[neighbor]
+                        heapq.heappush(open_list, (f_score[neighbor], neighbor))
 
         return None
 

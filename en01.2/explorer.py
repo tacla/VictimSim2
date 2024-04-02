@@ -33,7 +33,7 @@ class Explorer(AbstAgent):
         self.victims = {}          # a dictionary of found victims: (seq): ((x,y), [<vs>])
                                    # the key is the seq number of the victim,(x,y) the position, <vs> the list of vital signals
         self.walked = 0
-        self.returning = False
+        self.returning = []
 
         # put the current position - the base - in the map
         self.map.add(Position(coords=(self.x, self.y), difficulty=1, visited=True))
@@ -45,17 +45,17 @@ class Explorer(AbstAgent):
         next_pos = None
 
         for i in range(8): #todo colocar a preferencia da ordem
+            if obstacles[i] != VS.CLEAR:
+                continue
+
             coords = (self.x + Explorer.AC_INCR[i][0], self.y + Explorer.AC_INCR[i][1])
             pos = self.map.get_or_create(coords)
             actual_pos.neighborhood[coords] = pos
             pos.neighborhood[actual_pos.coords] = actual_pos
 
-            if obstacles[i] == VS.CLEAR:
-                if next_pos is None and not pos.visited: #todo colocar verificação que não ta fora da strag (ex: se x
-                    next_pos = Explorer.AC_INCR[i]
-                    # print(f"{actual_pos.coords} encontrado primeiro loop: {pos}")
-            else:
-                pos.difficulty = VS.OBST_WALL
+            if next_pos is None and not pos.visited: #todo colocar verificação que não ta fora da strag (ex: se x
+                next_pos = Explorer.AC_INCR[i]
+                # print(f"{actual_pos.coords} encontrado primeiro loop: {pos}")
 
         if next_pos is None:
             back_pos = self.map.get_closest_not_visited(actual_pos)
@@ -63,11 +63,8 @@ class Explorer(AbstAgent):
                 print("VOLTANDO")
                 back_pos = self.map.get((0, 0))
 
-            path = self.map.get_path(actual_pos, back_pos, self)
-            if len(path) == 0:
-                return (0,0)
-            next_pos = path[1]
-            return ((actual_pos.coords[0] - next_pos.coords[0]) * -1, (actual_pos.coords[1] - next_pos.coords[1]) * -1)
+            self.returning = self.map.get_path(actual_pos, back_pos, self)[1:]
+            return (0,0)
 
         #TODO:
         # 5. verificar se ele ta considerando o caminho segundo a direção (diag, reta)
@@ -77,6 +74,9 @@ class Explorer(AbstAgent):
 
     def explore(self):
         pos = self.map.get_or_create((self.x, self.y))
+
+        if (self.x == 57 and self.y == -27) or (self.x == 56 and self.y == -28):
+            print(f"marcando {pos} como visited")
         pos.visited = True
 
         dx, dy = self.get_next_position(pos)
@@ -108,7 +108,7 @@ class Explorer(AbstAgent):
 
     def return_to_base(self):
         actual_pos = self.map.get_or_create((self.x, self.y))
-        next_pos = self.map.get_path(actual_pos, self.map.get((0,0)), self)[1]
+        next_pos = self.returning.pop(0)
         dx, dy = ((actual_pos.coords[0] - next_pos.coords[0]) * -1, (actual_pos.coords[1] - next_pos.coords[1]) * -1)
 
         result = self.walk(dx, dy)
@@ -126,19 +126,21 @@ class Explorer(AbstAgent):
         sleep(devagarinho)
 
         pos = self.map.get_or_create((self.x, self.y))
+
+        # pos.visited = True
         if self.map.size() != 1 and self.x == 0 and self.y == 0:
             print(f"{self.NAME}: rtime {self.get_rtime()}, invoking the rescuer")
             return False
 
-        if self.returning:
+        if len(self.returning) != 0:
             self.return_to_base()
             return True
 
         if self.get_rtime() < self.walked + 3:
             self.walked = self.map.time_to_return(pos, self)
             if self.get_rtime() < self.walked + 3:
-                self.returning = True
-                self.return_to_base()
+                actual_pos = self.map.get_or_create((self.x, self.y))
+                self.returning = self.map.get_path(actual_pos, self.map.get((0, 0)), self)
                 return True
 
         self.explore()
