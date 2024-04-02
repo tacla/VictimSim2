@@ -1,4 +1,4 @@
-### VictimSim2
+### VictimSim2: Predicted vs Target 
 ### Author: Cesar A. Tacla, UTFPR
 ###
 ## Compara as predições de um classificador das classes de gravidade e de um regressor
