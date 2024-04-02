@@ -1,18 +1,21 @@
 ### VictimSim2: Predicted vs Target 
 ### Author: Cesar A. Tacla, UTFPR
 ###
-## Compara as predições de um classificador das classes de gravidade e de um regressor
-## dos valores de gravidade das vítimas contra um arquivo que contém os resultados de referência (target).
+## Compara as predições das classes de gravidade e da referência (target), no caso de um classificador.
+## No caso de um regressor, compara as predições dos valores de gravidade das vítimas contra os
+## valores de referência (target).
 ##
 ## Os arquivos a serem comparados são: 
 ##    file_target: arquivo com os resultados de referência
 ##    file_predict: arquivo com os resultados preditos
 ##
-##    formato dos dois arquivos: <id, x, y, gravity, class>
+##    formato dos dois arquivos: CSV sem cabeçalho 
+##    id, x, y, gravity, class
 ##
-## Os arquivos de referência e de predição podem ter tamanhos diferentes: o da predição pode
-## ser menor do que o de referência. Os casamentos são feitos por igualdade de <id>.
-## Resultados são calculados somente para casamentos perfeitos desta tripla.
+## Os arquivos target e de predição podem ter tamanhos diferentes: o da predição pode
+## ser menor do que o de referência. Os casamentos são feitos por igualdade de <id> das vítimas.
+##
+## Resultados são calculados somente para casamentos perfeitos entre target e predito.
 
 import csv
 import numpy as np
@@ -41,7 +44,9 @@ with open(file_target, 'r') as target_file, open(file_predict, 'r') as predict_f
     target_reader = csv.reader(target_file)
     predict_reader = csv.reader(predict_file)
 
-    # Create a dictionary to store the gravity value and the gravity label of file_target based on columns 1 (id), 2 (x), and 3 (y)
+    # Create a dictionary to store the gravity value and the gravity label of 
+    # file_target based on column 1 (id))
+    
     target_dict = {}
 
     for target_row in target_reader:
