@@ -13,7 +13,21 @@ from vs.abstract_agent import AbstAgent
 from vs.constants import VS
 from map import Map
 
-class Explorer(AbsAgent):
+class Stack:
+    def __init__(self):
+        self.items = []
+
+    def push(self, item):
+        self.items.append(item)
+
+    def pop(self):
+        if not self.is_empty():
+            return self.items.pop()
+
+    def is_empty(self):
+        return len(self.items) == 0
+
+class Explorer(AbstAgent):
     def __init__(self, env, config_file, resc):
         """ Construtor do agente random on-line
         @param env: a reference to the environment 
@@ -44,7 +58,7 @@ class Explorer(AbsAgent):
         # Loop until a CLEAR position is found
         while True:
             # Get a direction [0, 7]
-            direction = onlineDFS()
+            direction = self.onlineDFS(self)
             # Check if the corresponding position in walls_and_lim is CLEAR
             if obstacles[direction] == VS.CLEAR:
                 return Explorer.AC_INCR[direction]
@@ -141,6 +155,5 @@ class Explorer(AbsAgent):
 
         if state in untried:
             untried.add(state)
-        else:
 
-
+        return True
