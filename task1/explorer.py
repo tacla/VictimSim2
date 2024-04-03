@@ -58,10 +58,15 @@ class Explorer(AbstAgent):
         # Loop until a CLEAR position is found
         while True:
             # Get a direction [0, 7]
-            direction = self.onlineDFS()
+
+            #direction = random.randint(0, 7)
+            direction = self.online_DFS()
+            
             # Check if the corresponding position in walls_and_lim is CLEAR
-            if obstacles[direction] == VS.CLEAR:
-                return Explorer.AC_INCR[direction]
+            #if obstacles[direction] == VS.CLEAR:
+                #return Explorer.AC_INCR[direction]
+            
+            return direction
 
     def explore(self):
         # get an random increment for x and y       
@@ -146,14 +151,37 @@ class Explorer(AbstAgent):
         self.come_back()
         return True
 
-    def onlineDFS(self):
+    def online_DFS(self):
 
+        # Current state
         state = (self.x, self.y)
 
-        untried = []
-        unbacktracked = []
+        # Push the current state if it was not explored
+        if state not in self.walk_stack.items:
+            self.walk_stack.push(state)
+        
+        # Check the neighborhood walls and grid limits
+        obstacles = self.check_walls_and_lim()
+        
+        # 8 possible directions
+        directions = list(range(0, 8))
+        
+        # Check the 8 possible directions
+        for direction in directions:
 
-        if state in untried:
-            untried.append(state)
+            dx, dy = self.AC_INCR[direction]
+            next_state = (self.x + dx, self.y + dy)
 
-        return True
+            # Check if the corresponding position in walls_and_lim is CLEAR
+            if obstacles[direction] == VS.CLEAR:
+                # If the next state was not explored, return it
+                if next_state not in self.walk_stack.items:
+                    self.walk_stack.push(next_state)
+                    return dx, dy
+
+        # Every position was already explored. Walk back
+        if not self.walk_stack.is_empty():
+            return self.walk_stack.pop()
+
+        # Stack is empty, stop moving
+        return 0, 0
