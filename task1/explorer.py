@@ -58,7 +58,7 @@ class Explorer(AbstAgent):
         # Loop until a CLEAR position is found
         while True:
             # Get a direction [0, 7]
-            direction = self.onlineDFS(self)
+            direction = self.onlineDFS()
             # Check if the corresponding position in walls_and_lim is CLEAR
             if obstacles[direction] == VS.CLEAR:
                 return Explorer.AC_INCR[direction]
@@ -154,6 +154,6 @@ class Explorer(AbstAgent):
         unbacktracked = []
 
         if state in untried:
-            untried.add(state)
+            untried.append(state)
 
         return True
