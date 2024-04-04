@@ -34,6 +34,7 @@ class Explorer(AbstAgent):
                                    # the key is the seq number of the victim,(x,y) the position, <vs> the list of vital signals
         self.walked = 0
         self.returning = []
+        self.returning_base = False
 
         # put the current position - the base - in the map
         self.map.add(Position(coords=(self.x, self.y), difficulty=1, visited=True))
@@ -62,13 +63,12 @@ class Explorer(AbstAgent):
             back_pos = self.map.get_closest_not_visited(actual_pos)
             if back_pos is None:
                 print("VOLTANDO")
+                self.returning_base = True
                 back_pos = self.map.get((0, 0))
 
             self.returning = self.map.get_path(actual_pos, back_pos, self)[1:]
             return (0,0)
 
-        #TODO:
-        # 5. verificar se ele ta considerando o caminho segundo a direção (diag, reta)
 
         return next_pos
 
@@ -90,8 +90,8 @@ class Explorer(AbstAgent):
         self.y += dy
 
         seq = self.check_for_victim()
-        self.map.get_or_create((self.x, self.y)).victim_seq = seq
-        if seq != VS.NO_VICTIM:
+        if seq != VS.NO_VICTIM and self.map.get_or_create((self.x, self.y)).victim_seq == VS.NO_VICTIM:
+            self.map.get_or_create((self.x, self.y)).victim_seq = seq
             vs = self.read_vital_signals()
             self.victims[vs[0]] = ((self.x, self.y), vs)
             print(f"{self.NAME} Victim found at ({self.x}, {self.y}), rtime: {self.get_rtime()}")
@@ -126,7 +126,7 @@ class Explorer(AbstAgent):
 
         pos = self.map.get_or_create((self.x, self.y))
 
-        if self.map.size() != 1 and self.x == 0 and self.y == 0:
+        if self.returning_base and self.x == 0 and self.y == 0: #todo verificar se realmente é o objetivo voltar pra base
             print(f"{self.NAME}: rtime {self.get_rtime()}, invoking the rescuer")
             self.resc.go_save_victims(self.map, self.victims)
             return False
@@ -140,6 +140,7 @@ class Explorer(AbstAgent):
             if self.get_rtime() < self.walked + 3:
                 actual_pos = self.map.get_or_create((self.x, self.y))
                 self.returning = self.map.get_path(actual_pos, self.map.get((0, 0)), self)
+                self.returning_base = True
                 return True
 
         self.explore()

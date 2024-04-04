@@ -86,14 +86,14 @@ class Map:
         g_score = {actual_pos: 0}
         f_score = {actual_pos: heuristic(actual_pos)}
         parent = {actual_pos: None}
-        path_to_node = {actual_pos: [actual_pos]}  # Initialize with path to the start node
+        path_to_node = {actual_pos: [actual_pos]}
         heapq.heappush(open_list, (f_score[actual_pos], actual_pos))
 
         while open_list:
             _, current_node = heapq.heappop(open_list)
 
             if current_node == wanted_pos:
-                return path_to_node[current_node]  # Return the path to the wanted position
+                return path_to_node[current_node]
 
             closed_set.add(current_node)
 
@@ -113,7 +113,7 @@ class Map:
                             neighbor not in best_for or best_for[neighbor] > f_score[neighbor]):
                         best_for[neighbor] = f_score[neighbor]
                         heapq.heappush(open_list, (f_score[neighbor], neighbor))
-                        path_to_node[neighbor] = path_to_node[current_node] + [neighbor]  # Update path to neighbor
+                        path_to_node[neighbor] = path_to_node[current_node] + [neighbor]
 
         return None
 
