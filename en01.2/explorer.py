@@ -127,7 +127,6 @@ class Explorer(AbstAgent):
 
         pos = self.map.get_or_create((self.x, self.y))
 
-        # pos.visited = True
         if self.map.size() != 1 and self.x == 0 and self.y == 0:
             print(f"{self.NAME}: rtime {self.get_rtime()}, invoking the rescuer")
             return False
