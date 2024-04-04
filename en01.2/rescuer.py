@@ -24,7 +24,7 @@ class Rescuer(AbstAgent):
         super().__init__(env, config_file)
 
         # Specific initialization for the rescuer
-        self.map = None             # explorer will pass the map
+        self.map: Map = None             # explorer will pass the map
         self.victims = None         # list of found victims
         self.plan = []              # a list of planned actions
         self.plan_x = 0             # the x position of the rescuer during the planning phase
@@ -163,8 +163,8 @@ class Rescuer(AbstAgent):
         # For instance (0,1,True) means the agent walk to (x+0,y+1) and after walking, it leaves the kit.
 
         self.plan_visited.add((0,0)) # always start from the base, so it is already visited
-        difficulty, vic_seq, actions_res = self.map.get((0,0))
-        self.__depth_search(actions_res)
+        pos = self.map.get((0,0))
+        self.__depth_search(pos.action_seq)
 
         # push actions into the plan to come back to the base
         if self.plan == []:

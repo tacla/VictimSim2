@@ -41,6 +41,7 @@ class Explorer(AbstAgent):
     def get_next_position(self, actual_pos):
         global devagarinho, backt
         obstacles = self.check_walls_and_lim()
+        actual_pos.agent_seq = obstacles
 
         next_pos = None
 
@@ -73,13 +74,10 @@ class Explorer(AbstAgent):
 
 
     def explore(self):
-        pos = self.map.get_or_create((self.x, self.y))
+        old_pos = self.map.get_or_create((self.x, self.y))
+        old_pos.visited = True
 
-        if (self.x == 57 and self.y == -27) or (self.x == 56 and self.y == -28):
-            print(f"marcando {pos} como visited")
-        pos.visited = True
-
-        dx, dy = self.get_next_position(pos)
+        dx, dy = self.get_next_position(old_pos)
 
         rtime_bef = self.get_rtime()
         result = self.walk(dx, dy)
@@ -92,6 +90,7 @@ class Explorer(AbstAgent):
         self.y += dy
 
         seq = self.check_for_victim()
+        self.map.get_or_create((self.x, self.y)).victim_seq = seq
         if seq != VS.NO_VICTIM:
             vs = self.read_vital_signals()
             self.victims[vs[0]] = ((self.x, self.y), vs)
@@ -99,9 +98,9 @@ class Explorer(AbstAgent):
 
         difficulty = (rtime_bef - rtime_aft)
         if dx == 0 or dy == 0:
-            pos.difficulty = difficulty / self.COST_LINE
+            old_pos.difficulty = difficulty / self.COST_LINE
         else:
-            pos.difficulty = difficulty / self.COST_DIAG
+            old_pos.difficulty = difficulty / self.COST_DIAG
 
         self.walked += difficulty
         return
@@ -129,13 +128,14 @@ class Explorer(AbstAgent):
 
         if self.map.size() != 1 and self.x == 0 and self.y == 0:
             print(f"{self.NAME}: rtime {self.get_rtime()}, invoking the rescuer")
+            self.resc.go_save_victims(self.map, self.victims)
             return False
 
         if len(self.returning) != 0:
             self.return_to_base()
             return True
 
-        if self.get_rtime() < self.walked + 3:
+        if self.get_rtime() < self.walked + (3 * max(self.COST_LINE, self.COST_DIAG)) + self.COST_READ:
             self.walked = self.map.time_to_return(pos, self)
             if self.get_rtime() < self.walked + 3:
                 actual_pos = self.map.get_or_create((self.x, self.y))

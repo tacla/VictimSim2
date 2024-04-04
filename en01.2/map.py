@@ -1,8 +1,23 @@
-from math import sqrt
-from random import randint
+import heapq
 
 from vs.constants import VS
-import heapq
+
+
+class Position:
+    def __init__(self, coords, visited, difficulty=3):
+        self.coords = coords
+        self.difficulty = difficulty
+        self.victim_seq = VS.NO_VICTIM
+        self.visited = visited
+        self.neighborhood = {}
+        self.action_seq = []
+
+    def __str__(self):
+        return f"({self.coords[0]},{self.coords[1]})"
+
+    def __lt__(self, other):
+        return self.difficulty < other.difficulty
+
 
 class Map:
     def __init__(self):
@@ -21,7 +36,8 @@ class Map:
             pos = Position(coords=coord, visited=False)
             self.add(pos)
         return pos
-    def get(self, coord):
+
+    def get(self, coord) -> Position:
         return self.positions.get(coord)
 
     def add(self, position):
@@ -48,7 +64,7 @@ class Map:
         return None
 
     def time_to_return(self, actual_pos, explorer):
-        path = self.get_path(actual_pos, self.get((0,0)), explorer)[1:]
+        path = self.get_path(actual_pos, self.get((0, 0)), explorer)[1:]
         time = 0
         before = actual_pos
         for p in path:
@@ -93,7 +109,8 @@ class Map:
                     parent[neighbor] = current_node
                     g_score[neighbor] = tentative_g_score
                     f_score[neighbor] = tentative_g_score + heuristic(neighbor)
-                    if neighbor not in open_list and (neighbor not in best_for or best_for[neighbor] > f_score[neighbor]):
+                    if neighbor not in open_list and (
+                            neighbor not in best_for or best_for[neighbor] > f_score[neighbor]):
                         best_for[neighbor] = f_score[neighbor]
                         heapq.heappush(open_list, (f_score[neighbor], neighbor))
                         path_to_node[neighbor] = path_to_node[current_node] + [neighbor]  # Update path to neighbor
@@ -101,42 +118,20 @@ class Map:
         return None
 
     def draw(self):
-        print("TODO o draw")
-        return
-        if not self.map_data:
-            print("Map is empty.")
-            return
-
-        min_x = min(key[0] for key in self.map_data.keys())
-        max_x = max(key[0] for key in self.map_data.keys())
-        min_y = min(key[1] for key in self.map_data.keys())
-        max_y = max(key[1] for key in self.map_data.keys())
+        min_x = min(self.positions[key].coords[0] for key in self.positions.keys())
+        max_x = max(self.positions[key].coords[0] for key in self.positions.keys())
+        min_y = min(self.positions[key].coords[1] for key in self.positions.keys())
+        max_y = max(self.positions[key].coords[1] for key in self.positions.keys())
 
         for y in range(min_y, max_y + 1):
             row = ""
             for x in range(min_x, max_x + 1):
-                item = self.get((x, y))
-                if item:
-                    if item[1] == VS.NO_VICTIM:
-                        row += f"[{item[0]:7.2f}  no] "
+                pos = self.get((x, y))
+                if pos:
+                    if pos.victim_seq == VS.NO_VICTIM:
+                        row += f"[{pos.difficulty:7.2f}  no] "
                     else:
-                        row += f"[{item[0]:7.2f} {item[1]:3d}] "
+                        row += f"[{pos.difficulty:7.2f} {pos.victim_seq:3d}] "
                 else:
                     row += f"[     ?     ] "
             print(row)
-
-class Position:
-    def __init__(self, coords, visited, difficulty = 3):
-        self.coords = coords
-        self.difficulty = difficulty
-        self.victim_seq = VS.NO_VICTIM
-        self.visited = visited
-        self.neighborhood = {}
-
-    def __str__(self):
-        return f"({self.coords[0]},{self.coords[1]})"
-
-    def __lt__(self, other):
-        return self.difficulty < other.difficulty
-    # def __str__(self):
-    #     return f"({self.coords[0]}, {self.coords[1]}) - Difficulty: {self.difficulty} - Visited: {self.visited} - Neighborhood: {len(self.neighborhood)} - Victim Seq {self.victim_seq}"
