@@ -58,31 +58,26 @@ class Map:
         return time
 
     def get_path(self, actual_pos, wanted_pos, explorer):
-        # print("")
-        # print(f"{actual_pos} atual = {actual_pos.visited} indo para: {wanted_pos} com {wanted_pos.visited}")
         open_list = []
         best_for = {}
         closed_set = set()
 
         def heuristic(node):
-            return abs(node.coords[0] - wanted_pos.coords[0]) + abs(node.coords[1] - wanted_pos.coords[1]) * explorer.COST_LINE
+            dx, dy = node.coords[0] - wanted_pos.coords[0], node.coords[1] - wanted_pos.coords[1]
+            cost = explorer.COST_LINE if dx == 0 or dy == 0 else explorer.COST_DIAG
+            return abs(dx) + abs(dy) * cost
 
         g_score = {actual_pos: 0}
         f_score = {actual_pos: heuristic(actual_pos)}
         parent = {actual_pos: None}
+        path_to_node = {actual_pos: [actual_pos]}  # Initialize with path to the start node
         heapq.heappush(open_list, (f_score[actual_pos], actual_pos))
 
         while open_list:
-            # print("open list")
             _, current_node = heapq.heappop(open_list)
 
             if current_node == wanted_pos:
-                # print("ACHEI AQUI DENTRRO")
-                path = []
-                while current_node:
-                    path.append(current_node)
-                    current_node = parent[current_node]
-                return path[::-1]
+                return path_to_node[current_node]  # Return the path to the wanted position
 
             closed_set.add(current_node)
 
@@ -101,6 +96,7 @@ class Map:
                     if neighbor not in open_list and (neighbor not in best_for or best_for[neighbor] > f_score[neighbor]):
                         best_for[neighbor] = f_score[neighbor]
                         heapq.heappush(open_list, (f_score[neighbor], neighbor))
+                        path_to_node[neighbor] = path_to_node[current_node] + [neighbor]  # Update path to neighbor
 
         return None
 
