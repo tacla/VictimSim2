@@ -12,6 +12,9 @@ from vs.abstract_agent import AbstAgent
 from vs.physical_agent import PhysAgent
 from vs.constants import VS
 from abc import ABC, abstractmethod
+import random
+
+MAX_ITERATIONS = 25
 
 
 ## Classe que define o Agente Rescuer com um plano fixo
@@ -63,6 +66,9 @@ class Rescuer(AbstAgent):
 
         #print(f"{self.NAME} time limit to rescue {self.plan_rtime}")
 
+        # Before planning, we want to analyze the map
+        # self.__analyze_map()
+
         self.__planner()
         print(f"{self.NAME} PLAN")
         i = 1
@@ -77,6 +83,34 @@ class Rescuer(AbstAgent):
         print(f"{self.NAME} END OF PLAN")
                   
         self.set_state(VS.ACTIVE)
+    
+    def __analyze_map(self):
+       
+        # Número  de clusters, baseado na quantidade de Socorristas
+        k = 4
+
+        # Sortear K pontos, no espaço N-dimensional
+        coordinates = []
+        
+        while len(coordinates) < k:
+            x = random.randint(self.map.min_x, self.map.max_x)
+            y = random.randint(self.map.min_y, self.map.max_y)
+            if (x, y) not in coordinates:
+                coordinates.append((x, y))
+
+        # Iterar sob
+        centroid_change = True
+        i = 0
+
+        # while i < MAX_ITERATIONS and centroid_change:
+        #     centroid_change = False
+        #     foreach self.map_data in self.map: 
+        
+
+
+
+
+
         
     def __depth_search(self, actions_res):
         enough_time = True
@@ -157,7 +191,7 @@ class Rescuer(AbstAgent):
         Then, if the next position was visited by the explorer, the rescuer goes to there. Otherwise, it picks the following possible action.
         For each planned action, the agent calculates the time will be consumed. When time to come back to the base arrives,
         it reverses the plan."""
-
+         
         # This is a off-line trajectory plan, each element of the list is a pair dx, dy that do the agent walk in the x-axis and/or y-axis.
         # Besides, it has a flag indicating that a first-aid kit must be delivered when the move is completed.
         # For instance (0,1,True) means the agent walk to (x+0,y+1) and after walking, it leaves the kit.
