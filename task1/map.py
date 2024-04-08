@@ -20,6 +20,12 @@
 from vs.constants import VS
 
 class Map:
+
+    min_x = 0
+    max_x = 0
+    min_y = 0
+    max_y = 0
+
     def __init__(self):
         self.map_data = {}
 
@@ -45,14 +51,14 @@ class Map:
             print("Map is empty.")
             return
 
-        min_x = min(key[0] for key in self.map_data.keys())
-        max_x = max(key[0] for key in self.map_data.keys())
-        min_y = min(key[1] for key in self.map_data.keys())
-        max_y = max(key[1] for key in self.map_data.keys())
+        Map.min_x = min(key[0] for key in self.map_data.keys())
+        Map.max_x = max(key[0] for key in self.map_data.keys())
+        Map.min_y = min(key[1] for key in self.map_data.keys())
+        Map.max_y = max(key[1] for key in self.map_data.keys())
 
-        for y in range(min_y, max_y + 1):
+        for y in range(Map.min_y, Map.max_y + 1):
             row = ""
-            for x in range(min_x, max_x + 1):
+            for x in range(Map.min_x, Map.max_x + 1):
                 item = self.get((x, y))
                 if item:
                     if item[1] == VS.NO_VICTIM:
