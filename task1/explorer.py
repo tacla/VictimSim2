@@ -28,8 +28,15 @@ class Stack:
         return len(self.items) == 0
 
 class Explorer(AbstAgent):
+
+    # shared with all explorers
+    num_of_explorers = 0
+    map = Map()
+    global_victims = []
+
     def __init__(self, env, config_file, resc):
-        """ Construtor do agente random on-line
+        """ 
+        Construtor do agente random on-line
         @param env: a reference to the environment 
         @param config_file: the absolute path to the explorer's config file
         @param resc: a reference to the rescuer agent to invoke when exploration finishes
@@ -37,36 +44,22 @@ class Explorer(AbstAgent):
 
         super().__init__(env, config_file)
         self.walk_stack = Stack()  # a stack to store the movements
+        self.untried = {}
+        self.unbacktracked = {}
+        Explorer.num_of_explorers += 1
         self.set_state(VS.ACTIVE)  # explorer is active since the begin
         self.resc = resc           # reference to the rescuer agent
         self.x = 0                 # current x position relative to the origin 0
         self.y = 0                 # current y position relative to the origin 0
-        self.map = Map()           # create a map for representing the environment
         self.victims = {}          # a dictionary of found victims: (seq): ((x,y), [<vs>])
                                    # the key is the seq number of the victim,(x,y) the position, <vs> the list of vital signals
 
         # put the current position - the base - in the map
-        self.map.add((self.x, self.y), 1, VS.NO_VICTIM, self.check_walls_and_lim())
+        Explorer.map.add((self.x, self.y), 1, VS.NO_VICTIM, self.check_walls_and_lim())
 
     def get_next_position(self):
-        """ Randomically, gets the next position that can be explored (no wall and inside the grid)
-            There must be at least one CLEAR position in the neighborhood, otherwise it loops forever.
-        """
-        # Check the neighborhood walls and grid limits
-        obstacles = self.check_walls_and_lim()
-    
-        # Loop until a CLEAR position is found
-        while True:
-            # Get a direction [0, 7]
-
-            #direction = random.randint(0, 7)
-            direction = self.online_DFS()
-            
-            # Check if the corresponding position in walls_and_lim is CLEAR
-            #if obstacles[direction] == VS.CLEAR:
-                #return Explorer.AC_INCR[direction]
-            
-            return direction
+        direction = self.online_DFS()
+        return direction
 
     def explore(self):
         # get an random increment for x and y       
@@ -81,7 +74,7 @@ class Explorer(AbstAgent):
         # Should never bump, but for safe functionning let's test
         if result == VS.BUMPED:
             # update the map with the wall
-            self.map.add((self.x + dx, self.y + dy), VS.OBST_WALL, VS.NO_VICTIM, self.check_walls_and_lim())
+            Explorer.map.add((self.x + dx, self.y + dy), VS.OBST_WALL, VS.NO_VICTIM, self.check_walls_and_lim())
             #print(f"{self.NAME}: Wall or grid limit reached at ({self.x + dx}, {self.y + dy})")
 
         if result == VS.EXECUTED:
@@ -109,7 +102,7 @@ class Explorer(AbstAgent):
                 difficulty = difficulty / self.COST_DIAG
 
             # Update the map with the new cell
-            self.map.add((self.x, self.y), difficulty, seq, self.check_walls_and_lim())
+            Explorer.map.add((self.x, self.y), difficulty, seq, self.check_walls_and_lim())
             #print(f"{self.NAME}:at ({self.x}, {self.y}), diffic: {difficulty:.2f} vict: {seq} rtime: {self.get_rtime()}")
 
         return
@@ -131,8 +124,10 @@ class Explorer(AbstAgent):
             #print(f"{self.NAME}: coming back at ({self.x}, {self.y}), rtime: {self.get_rtime()}")
 
     def deliberate(self) -> bool:
-        """ The agent chooses the next action. The simulator calls this
-        method at each cycle. Must be implemented in every agent"""
+        """ 
+        The agent chooses the next action. The simulator calls this
+        method at each cycle. Must be implemented in every agent
+        """
 
         consumed_time = self.TLIM - self.get_rtime()
         if consumed_time < self.get_rtime():
@@ -145,43 +140,60 @@ class Explorer(AbstAgent):
             # pass the walls and the victims (here, they're empty)
             print(f"{self.NAME}: rtime {self.get_rtime()}, invoking the rescuer")
             #input(f"{self.NAME}: type [ENTER] to proceed")
-            self.resc.go_save_victims(self.map, self.victims)
+
+            Explorer.global_victims.append(self.victims)
+            Explorer.num_of_explorers -= 1
+
+            if (Explorer.num_of_explorers == 0):
+                # the last explorer calls the rescuer
+                self.resc.go_save_victims(Explorer.map, Explorer.global_victims.copy())
+                 
             return False
 
         self.come_back()
         return True
 
     def online_DFS(self):
+        """
+        Perform online DFS.
+        """
+
+        # Check the neighborhood walls and grid limits
+        obstacles = self.check_walls_and_lim()
 
         # Current state
         state = (self.x, self.y)
 
-        # Push the current state if it was not explored
-        if state not in self.walk_stack.items:
-            self.walk_stack.push(state)
-        
-        # Check the neighborhood walls and grid limits
-        obstacles = self.check_walls_and_lim()
-        
         # 8 possible directions
-        directions = list(range(0, 8))
+        directions = list(range(8))
+
+        # Add the current state if it was not explored
+        if state not in self.untried:
+            self.untried[state] = directions
+            random.shuffle(self.untried[state]) # if not random, explorers go all the same way
         
-        # Check the 8 possible directions
-        for direction in directions:
+        # Explores every untried direction
+        while self.untried[state]:
 
-            dx, dy = self.AC_INCR[direction]
-            next_state = (self.x + dx, self.y + dy)
+            # next state
+            next_direction = self.untried[state][0]
+            dx, dy = self.AC_INCR[next_direction] # increment
 
-            # Check if the corresponding position in walls_and_lim is CLEAR
-            if obstacles[direction] == VS.CLEAR:
-                # If the next state was not explored, return it
-                if next_state not in self.walk_stack.items:
-                    self.walk_stack.push(next_state)
-                    return dx, dy
+            obstacle = obstacles[next_direction] # {CLEAR, WALL, END}
 
-        # Every position was already explored. Walk back
-        if not self.walk_stack.is_empty():
-            return self.walk_stack.pop()
+            if obstacle == VS.WALL or obstacle == VS.END: # wall or end state
+                # can not continue, pop
+                self.untried[state].pop(0)
+            elif obstacle == VS.CLEAR: # clear state
 
-        # Stack is empty, stop moving
-        return 0, 0
+                if state not in self.unbacktracked:
+                    self.unbacktracked[state] = []
+                
+                self.unbacktracked[state].append((self.x + dx, self.y + dy))
+
+                # return direction
+                return self.AC_INCR[self.untried[state].pop(0)]
+
+        # if can not continue, go back
+        if not self.untried[state]:
+            return self.unbacktracked[state].pop(0)
