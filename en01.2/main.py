@@ -6,6 +6,7 @@ import time
 from vs.environment import Env
 from explorer import Explorer
 from rescuer import Rescuer
+from strategy import PRIORITIES
 
 def main(data_folder_name):
    
@@ -22,11 +23,17 @@ def main(data_folder_name):
     explorer_file = os.path.join(data_folder, "explorer_config.txt")
     
     # Instantiate agents rescuer and explorer
-    resc = Rescuer(env, rescuer_file)
+    resc0 = Rescuer(env, rescuer_file)
+    resc1 = Rescuer(env, rescuer_file)
+    resc2 = Rescuer(env, rescuer_file)
+    resc3 = Rescuer(env, rescuer_file)
 
     # Explorer needs to know rescuer to send the map
     # that's why rescuer is instatiated before
-    exp = Explorer(env, explorer_file, resc)
+    exp0 = Explorer(env, explorer_file, resc0, PRIORITIES[0])
+    exp1 = Explorer(env, explorer_file, resc1, PRIORITIES[1])
+    exp2 = Explorer(env, explorer_file, resc2, PRIORITIES[2])
+    exp3 = Explorer(env, explorer_file, resc3, PRIORITIES[3])
 
     # Run the environment simulator
     env.run()
@@ -40,6 +47,9 @@ if __name__ == '__main__':
         data_folder_name = sys.argv[1]
     else:
         # data_folder_name = os.path.join("datasets", "data_10v_12x12")
-        data_folder_name = os.path.join("datasets", "data_42v_20x20")
+        # data_folder_name = os.path.join("datasets", "data_42v_20x20")
+        data_folder_name = os.path.join("datasets", "data_132v_100x80")
+        # data_folder_name = os.path.join("datasets", "data_225v_100x80")
+        # data_folder_name = os.path.join("datasets", "data_300v_90x90")
         
     main(data_folder_name)

@@ -17,7 +17,7 @@ from map import Map, Position
 
 devagarinho = 0.001
 class Explorer(AbstAgent):
-    def __init__(self, env, config_file, resc):
+    def __init__(self, env, config_file, resc, priority):
         """ Construtor do agente random on-line
         @param env: a reference to the environment 
         @param config_file: the absolute path to the explorer's config file
@@ -35,6 +35,8 @@ class Explorer(AbstAgent):
         self.walked = 0
         self.returning = []
         self.returning_base = False
+        self.in_strategy = True
+        self.priority = priority
 
         # put the current position - the base - in the map
         self.map.add(Position(coords=(self.x, self.y), difficulty=1, visited=True))
@@ -46,7 +48,7 @@ class Explorer(AbstAgent):
 
         next_pos = None
 
-        for i in range(8): #todo colocar a preferencia da ordem
+        for i in self.priority:
             if obstacles[i] != VS.CLEAR:
                 continue
 
