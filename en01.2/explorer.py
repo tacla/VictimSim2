@@ -62,12 +62,12 @@ class Explorer(AbstAgent):
         if next_pos is None:
             back_pos = self.map.get_closest_not_visited(actual_pos)
             if back_pos is None:
-                print("VOLTANDO")
+                print("VOLTANDO BASE")
                 self.returning_base = True
                 back_pos = self.map.get((0, 0))
 
             self.returning = self.map.get_path(actual_pos, back_pos, self)[1:]
-            return (0,0)
+            return self.get_returning_direction()
 
 
         return next_pos
@@ -106,9 +106,7 @@ class Explorer(AbstAgent):
         return
 
     def return_to_base(self):
-        actual_pos = self.map.get_or_create((self.x, self.y))
-        next_pos = self.returning.pop(0)
-        dx, dy = ((actual_pos.coords[0] - next_pos.coords[0]) * -1, (actual_pos.coords[1] - next_pos.coords[1]) * -1)
+        dx, dy = self.get_returning_direction()
 
         result = self.walk(dx, dy)
 
@@ -118,6 +116,11 @@ class Explorer(AbstAgent):
         self.x += dx
         self.y += dy
         return
+
+    def get_returning_direction(self):
+        actual_pos = self.map.get_or_create((self.x, self.y))
+        next_pos = self.returning.pop(0)
+        return ((actual_pos.coords[0] - next_pos.coords[0]) * -1, (actual_pos.coords[1] - next_pos.coords[1]) * -1)
 
     def deliberate(self) -> bool:
         """ The agent chooses the next action. The simulator calls this
