@@ -142,7 +142,7 @@ class Explorer(AbstAgent):
 
         if self.get_rtime() < self.walked + (3 * max(self.COST_LINE, self.COST_DIAG)) + self.COST_READ:
             self.walked = self.map.time_to_return(pos, self)
-            if self.get_rtime() < self.walked + (3 * max(self.COST_LINE, self.COST_DIAG)):
+            if self.get_rtime() < self.walked + (3 * max(self.COST_LINE, self.COST_DIAG)) + (3 * max(self.COST_LINE, self.COST_DIAG)):
                 actual_pos = self.map.get_or_create((self.x, self.y))
                 self.returning = self.map.get_path(actual_pos, self.map.get((0, 0)), self)
                 self.returning_base = True
