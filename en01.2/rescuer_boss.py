@@ -2,9 +2,7 @@ from rescuer import Rescuer
 from sklearn.cluster import KMeans
 import numpy as np
 import os
-from matplotlib import pyplot as plt
 import pandas as pd
-from dijkstar import Graph, find_path
 from map import Map
 # from victim import Victim
 
