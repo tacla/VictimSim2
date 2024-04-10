@@ -15,8 +15,6 @@ class RescuerBoss(Rescuer):
         self.map = Map()
         self.map_victims = {}
         self.map_obstacles = {}
-        self.map_graph = Graph()
-        self.victims_graph = Graph()
         self.rescuers = rescuer_list
         self.victim_clusters : list = [None,None,None,None]
 
