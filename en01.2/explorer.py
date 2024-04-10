@@ -15,9 +15,9 @@ from vs.abstract_agent import AbstAgent
 from vs.constants import VS
 from map import Map, Position
 
-devagarinho = 0.001
+devagarinho = 0
 class Explorer(AbstAgent):
-    def __init__(self, env, config_file, resc, priority):
+    def __init__(self, env, config_file, boss, priority):
         """ Construtor do agente random on-line
         @param env: a reference to the environment 
         @param config_file: the absolute path to the explorer's config file
@@ -26,7 +26,7 @@ class Explorer(AbstAgent):
 
         super().__init__(env, config_file)
         self.set_state(VS.ACTIVE)  # explorer is active since the begin
-        self.resc = resc           # reference to the rescuer agent
+        self.boss = boss           # reference to the rescuer agent
         self.x = 0                 # current x position relative to the origin 0
         self.y = 0                 # current y position relative to the origin 0
         self.map = Map()           # create a map for representing the environment
@@ -96,6 +96,9 @@ class Explorer(AbstAgent):
             self.map.get_or_create((self.x, self.y)).victim_seq = seq
             vs = self.read_vital_signals()
             self.victims[vs[0]] = ((self.x, self.y), vs)
+            new_victim = {seq:((self.x, self.y), vs)}
+            print(new_victim)
+            # self.boss.map_victims[seq] = ((self.x, self.y), vs)
             print(f"{self.NAME} Victim found at ({self.x}, {self.y}), rtime: {self.get_rtime()}")
 
         difficulty = (rtime_bef - rtime_aft)
@@ -113,7 +116,7 @@ class Explorer(AbstAgent):
         result = self.walk(dx, dy)
 
         if result != VS.EXECUTED:
-            raise Exception("não deveria bater")
+            print("não deveria bater")
 
         self.x += dx
         self.y += dy
@@ -133,20 +136,28 @@ class Explorer(AbstAgent):
 
         if self.returning_base and self.x == 0 and self.y == 0: #todo verificar se realmente é o objetivo voltar pra base
             print(f"{self.NAME}: rtime {self.get_rtime()}, invoking the rescuer")
-            self.resc.go_save_victims(self.map, self.victims)
+            # combined_map = self.environment.combine_explorers_maps()
+            # print (combined_map)
+            self.boss.alert_explorer_inactive(self.map, self.victims)
             return False
 
-        if len(self.returning) != 0:
+        if self.returning_base:
             self.return_to_base()
             return True
 
         if self.get_rtime() < self.walked + (3 * max(self.COST_LINE, self.COST_DIAG)) + self.COST_READ:
             self.walked = self.map.time_to_return(pos, self)
-            if self.get_rtime() < self.walked + (3 * max(self.COST_LINE, self.COST_DIAG)) + (3 * max(self.COST_LINE, self.COST_DIAG)):
+            print(self.walked)
+            if self.get_rtime() < self.walked + 50:
                 actual_pos = self.map.get_or_create((self.x, self.y))
                 self.returning = self.map.get_path(actual_pos, self.map.get((0, 0)), self)
                 self.returning_base = True
+                self.return_to_base()
                 return True
+            
+        if len(self.returning) != 0:
+            self.return_to_base()
+            return True
 
         self.explore()
         return True

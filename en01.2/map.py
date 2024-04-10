@@ -47,6 +47,18 @@ class Map:
         self.positions[position.coords] = position
         return position
 
+    def extend_map(self, map):
+        repeated = set(self.positions.keys()).intersection(set(map.positions.keys()))  
+
+        for r in repeated:
+            if (len(map.positions[r].neighborhood) > len(self.positions[r].neighborhood)):
+                self.positions[r] = map.positions[r]
+
+        for p in map.positions:
+            if(p not in self.positions):
+                self.positions[p] = map.positions[p]
+
+
     def visited(self, coord):
         return coord in self.positions and self.positions[coord].visited
 
