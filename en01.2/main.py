@@ -27,9 +27,8 @@ def main(data_folder_name):
     resc0 = Rescuer(env, rescuer_file)
     resc1 = Rescuer(env, rescuer_file)
     resc2 = Rescuer(env, rescuer_file)
-    resc3 = Rescuer(env, rescuer_file)
 
-    resc_b = RescuerBoss(env, rescuer_file, [resc1, resc2, resc3])
+    resc_b = RescuerBoss(env, rescuer_file, [resc0, resc1, resc2])
 
     # Explorer needs to know rescuer to send the map
     # that's why rescuer is instatiated before
