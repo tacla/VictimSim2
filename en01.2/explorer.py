@@ -96,6 +96,13 @@ class Explorer(AbstAgent):
 
         self.x += dx
         self.y += dy
+
+        seq = self.check_for_victim()
+        if seq != VS.NO_VICTIM and self.map.get_or_create((self.x, self.y)).victim_seq == VS.NO_VICTIM:
+            self.map.get_or_create((self.x, self.y)).victim_seq = seq
+            vs = self.read_vital_signals()
+            self.victims[vs[0]] = ((self.x, self.y), vs)
+            print(f"{self.NAME} Victim found at ({self.x}, {self.y}), rtime: {self.get_rtime()}")
         return
 
     def get_returning_direction(self):
