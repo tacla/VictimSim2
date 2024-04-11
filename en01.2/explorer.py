@@ -57,14 +57,12 @@ class Explorer(AbstAgent):
             actual_pos.neighborhood[coords] = pos
             pos.neighborhood[actual_pos.coords] = actual_pos
 
-            if next_pos is None and not pos.visited: #todo colocar verificação que não ta fora da strag (ex: se x
+            if next_pos is None and not pos.visited:
                 next_pos = Explorer.AC_INCR[i]
-                # print(f"{actual_pos.coords} encontrado primeiro loop: {pos}")
 
         if next_pos is None:
             back_pos = self.map.get_closest_not_visited(actual_pos)
             if back_pos is None:
-                print("VOLTANDO BASE")
                 self.returning_base = True
                 back_pos = self.map.get((0, 0))
 
@@ -86,7 +84,8 @@ class Explorer(AbstAgent):
         rtime_aft = self.get_rtime()
 
         if result != VS.EXECUTED:
-            raise Exception("não deveria bater")
+            print(f"{self.NAME} deu problema: {result} no {self.x, self.y} indo para {dx, dy}")
+            return
 
         self.x += dx
         self.y += dy
@@ -96,9 +95,6 @@ class Explorer(AbstAgent):
             self.map.get_or_create((self.x, self.y)).victim_seq = seq
             vs = self.read_vital_signals()
             self.victims[vs[0]] = ((self.x, self.y), vs)
-            new_victim = {seq:((self.x, self.y), vs)}
-            print(new_victim)
-            # self.boss.map_victims[seq] = ((self.x, self.y), vs)
             print(f"{self.NAME} Victim found at ({self.x}, {self.y}), rtime: {self.get_rtime()}")
 
         difficulty = (rtime_bef - rtime_aft)
@@ -116,7 +112,8 @@ class Explorer(AbstAgent):
         result = self.walk(dx, dy)
 
         if result != VS.EXECUTED:
-            print("não deveria bater")
+            print(f"{self.NAME} deu problema voltando pra base: {result} no {self.x, self.y} indo para {dx, dy}")
+            return
 
         self.x += dx
         self.y += dy
@@ -134,10 +131,8 @@ class Explorer(AbstAgent):
 
         pos = self.map.get_or_create((self.x, self.y))
 
-        if self.returning_base and self.x == 0 and self.y == 0: #todo verificar se realmente é o objetivo voltar pra base
+        if self.returning_base and self.x == 0 and self.y == 0:
             print(f"{self.NAME}: rtime {self.get_rtime()}, invoking the rescuer")
-            # combined_map = self.environment.combine_explorers_maps()
-            # print (combined_map)
             self.boss.alert_explorer_inactive(self.map, self.victims)
             return False
 
@@ -147,7 +142,6 @@ class Explorer(AbstAgent):
 
         if self.get_rtime() < self.walked + (3 * max(self.COST_LINE, self.COST_DIAG)) + self.COST_READ:
             self.walked = self.map.time_to_return(pos, self)
-            print(self.walked)
             if self.get_rtime() < self.walked + 50:
                 actual_pos = self.map.get_or_create((self.x, self.y))
                 self.returning = self.map.get_path(actual_pos, self.map.get((0, 0)), self)
