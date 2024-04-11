@@ -4,6 +4,7 @@ from sklearn.cluster import KMeans
 
 from map import Map
 from rescuer import Rescuer
+from vs.constants import VS
 
 
 class RescuerBoss(Rescuer):
@@ -21,13 +22,15 @@ class RescuerBoss(Rescuer):
         self.map.extend_map(map)
         self.inactive_exp_counter += 1
 
-        if (self.inactive_exp_counter == 4):
+        if self.inactive_exp_counter == 4:
             self.prepare_rescuers()
 
     def prepare_rescuers(self) -> None:
-
         print(f"Mapa encontrado contendo {len(self.map.positions)} posições")
         self.cluster_victims()
+        self.set_state(VS.ACTIVE)
+        for r in self.rescuers:
+            r.set_state(VS.ACTIVE)
 
     def cluster_victims(self) -> None:
         coordenadas = np.array([self.map_victims[id][0] for id in self.map_victims])
