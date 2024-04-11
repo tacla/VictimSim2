@@ -1,48 +1,29 @@
-# EXPLORER AGENT
-# @Author: Tacla, UTFPR
-#
-### It walks randomly in the environment looking for victims. When half of the
-### exploration has gone, the explorer goes back to the base.
+from time import sleep
 
-import sys
-import os
-import random
-import math
-from abc import ABC, abstractmethod
-from time import sleep, time
-
+from map import Map, Position
 from vs.abstract_agent import AbstAgent
 from vs.constants import VS
-from map import Map, Position
 
-devagarinho = 0
+
 class Explorer(AbstAgent):
     def __init__(self, env, config_file, boss, priority):
-        """ Construtor do agente random on-line
-        @param env: a reference to the environment 
-        @param config_file: the absolute path to the explorer's config file
-        @param resc: a reference to the rescuer agent to invoke when exploration finishes
-        """
-
         super().__init__(env, config_file)
-        self.set_state(VS.ACTIVE)  # explorer is active since the begin
-        self.boss = boss           # reference to the rescuer agent
-        self.x = 0                 # current x position relative to the origin 0
-        self.y = 0                 # current y position relative to the origin 0
-        self.map = Map()           # create a map for representing the environment
-        self.victims = {}          # a dictionary of found victims: (seq): ((x,y), [<vs>])
-                                   # the key is the seq number of the victim,(x,y) the position, <vs> the list of vital signals
+        self.set_state(VS.ACTIVE)
+        self.boss = boss
+        self.x = 0
+        self.y = 0
+        self.map = Map()
+        self.victims = {}
+
         self.walked = 0
         self.returning = []
         self.returning_base = False
         self.in_strategy = True
         self.priority = priority
 
-        # put the current position - the base - in the map
         self.map.add(Position(coords=(self.x, self.y), difficulty=1, visited=True))
 
     def get_next_position(self, actual_pos):
-        global devagarinho, backt
         obstacles = self.check_walls_and_lim()
         actual_pos.agent_seq = obstacles
 
@@ -69,9 +50,7 @@ class Explorer(AbstAgent):
             self.returning = self.map.get_path(actual_pos, back_pos, self)[1:]
             return self.get_returning_direction()
 
-
         return next_pos
-
 
     def explore(self):
         old_pos = self.map.get_or_create((self.x, self.y))
@@ -125,10 +104,6 @@ class Explorer(AbstAgent):
         return ((actual_pos.coords[0] - next_pos.coords[0]) * -1, (actual_pos.coords[1] - next_pos.coords[1]) * -1)
 
     def deliberate(self) -> bool:
-        """ The agent chooses the next action. The simulator calls this
-        method at each cycle. Must be implemented in every agent"""
-        sleep(devagarinho)
-
         pos = self.map.get_or_create((self.x, self.y))
 
         if self.returning_base and self.x == 0 and self.y == 0:

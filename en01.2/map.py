@@ -26,9 +26,6 @@ class Map:
     def in_map(self, coord):
         return coord in self.positions
 
-    def size(self):
-        return len(self.positions)
-
     def get_or_create(self, coord):
         if self.in_map(coord):
             pos = self.get(coord)
@@ -47,17 +44,16 @@ class Map:
         self.positions[position.coords] = position
         return position
 
-    def extend_map(self, map):
-        repeated = set(self.positions.keys()).intersection(set(map.positions.keys()))  
+    def extend_map(self, new_map):
+        repeated = set(self.positions.keys()).intersection(set(new_map.positions.keys()))
 
         for r in repeated:
-            if (len(map.positions[r].neighborhood) > len(self.positions[r].neighborhood)):
-                self.positions[r] = map.positions[r]
+            if len(new_map.positions[r].neighborhood) > len(self.positions[r].neighborhood):
+                self.positions[r] = new_map.positions[r]
 
-        for p in map.positions:
-            if(p not in self.positions):
-                self.positions[p] = map.positions[p]
-
+        for p in new_map.positions:
+            if p not in self.positions:
+                self.positions[p] = new_map.positions[p]
 
     def visited(self, coord):
         return coord in self.positions and self.positions[coord].visited
@@ -67,7 +63,7 @@ class Map:
         verified = {}
         while len(queue) != 0:
             p = queue.pop()
-            if not p.visited and p.difficulty <= 3:
+            if not p.visited:
                 return p
 
             if p.coords not in verified:
