@@ -7,6 +7,7 @@ from vs.environment import Env
 from explorer import Explorer
 from rescuer import Rescuer
 from cluster import Cluster
+from map import Map
 
 def main(data_folder_name):
    
@@ -35,6 +36,10 @@ def main(data_folder_name):
     # Run the environment simulator
     env.run()
 
+    # Join all maps
+    complete_map = Map()
+    complete_map.map_data = exp.map.map_data | exp2.map.map_data | exp3.map.map_data | exp4.map.map_data
+
     # Condensate all victims data
     total_victims = {}
     for ex in [exp, exp2, exp3, exp4]:
@@ -55,6 +60,6 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         data_folder_name = sys.argv[1]
     else:
-        data_folder_name = os.path.join("datasets", "data_300v_90x90")
+        data_folder_name = os.path.join("datasets", "data_10v_12x12")
         
     main(data_folder_name)
