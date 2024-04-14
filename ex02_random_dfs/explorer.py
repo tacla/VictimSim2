@@ -74,21 +74,72 @@ class Explorer(AbstAgent):
         else:              #fourth agent's sequence of actions
             self.actions = ["E","W","S","N","SE","SO","NO","NE"]
 
+        self.versao = {
+            1: ([2, 4, 6, 0, 3, 5, 1, 7], [(1, 0), (0, 1), (-1, 0), (0, -1), (1, 1), (-1, 1), (-1, 1), (-1, -1)]),  
+            2: ([0, 2, 4, 6, 3, 5, 7, 1], [(0, -1), (1, 0), (0, 1), (-1, 0), (1, 1), (-1, 1), (-1, -1) , (1, -1)]),  
+            3: ([7, 6, 5, 4, 3, 2, 1, 0], [(-1, -1), (-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1), (0, -1)]),  
+            4: ([1, 2, 7, 0, 6, 3, 4, 5], [(1, -1), (1, 0), (-1, -1), (0, -1), (-1, 0), (1, 1), (0, 1), (-1, 1)])   
+        }
+
+        if self.id not in self.versao:
+            raise ValueError(f"Invalid versao: {self.id}. Valid versions are: {list(self.versao.keys())}")
+        self.number, self.indicacao = self.versao[self.id]
+
         # put the current position - the base - in the map
         self.map.add((self.x, self.y), 1, VS.NO_VICTIM, self.check_walls_and_lim())
 
-    def get_next_position(self):
-        # Check the neighborhood walls and grid limits
-        obstacles = self.check_walls_and_lim()
+        self.stack = [(self.x, self.y)]
+        self.visited = set()                           
+        self.env = env # it is the environment
+        self.start = (self.x,self.y)    # the starting position        
+        self.visited_positions = [] # a list of visited positions
+        self.visited_victims = [] # a list of visited victims 
+        # put the current position - the base - in the map
+        self.map.add((self.x, self.y), 1, VS.NO_VICTIM, self.check_walls_and_lim())
+
+    # def get_next_position(self):
+    #     # Check the neighborhood walls and grid limits
+    #     obstacles = self.check_walls_and_lim()
     
+    #     # Loop until a CLEAR position is found
+    #     while True:
+    #         # Get a direction from the DFS algorithm
+    #         direction = self.DFS_online()
+    #     # Check if the corresponding position in walls_and_lim is CLEAR
+    #         if obstacles[direction] == VS.CLEAR:
+    #             return Explorer.AC_INCR[direction]
+    
+    def get_next_position(self):
+        #number=[2,5,7,3,4,6,0,1]
+        #indicacao = [(1, 0),(-1, 1),(1, -1),(1, 1), (0, 1),(-1, 0),(-1, -1),(0,-1)]
+
+        currCell = (self.x, self.y)
+        if not hasattr(self, 'visited_stack'):
+            self.visited_stack = [currCell]
+        if currCell not in self.visited:
+            self.visited.add(currCell)
+        obstacles = self.check_walls_and_lim()
+
         # Loop until a CLEAR position is found
-        while True:
-            # Get a direction from the DFS algorithm
-            direction = self.DFS_online()
-        # Check if the corresponding position in walls_and_lim is CLEAR
-            if obstacles[direction] == VS.CLEAR:
-                return Explorer.AC_INCR[direction]
-        
+        for k in range(len(self.number)):
+            i = self.number[k]
+            dx, dy = self.indicacao[k]
+            childcell = (currCell[0] + dx, currCell[1] + dy)
+
+            if obstacles[i] == VS.CLEAR and childcell[0] < self.env.dic["GRID_WIDTH"] and childcell[1] < self.env.dic["GRID_HEIGHT"] and childcell not in self.visited:
+                self.visited.add(childcell)
+                self.visited_stack.append(childcell)
+                return Explorer.AC_INCR[i]
+
+        # If no CLEAR position is found, backtrack to a previously visited position
+        if len(self.visited_stack) > 1:
+            self.visited_stack.pop()  # Remove current position
+            last_visited = self.visited_stack[-1]  # Get last visited position
+            return (last_visited[0] - currCell[0], last_visited[1] - currCell[1])  # Return direction to last visited position
+
+        # If no previously visited position is available, return None
+        return None
+                
     def explore(self):
         # get an random increment for x and y       
         next_position = self.get_next_position()
@@ -169,7 +220,7 @@ class Explorer(AbstAgent):
             #   adiciona a posicao atual no untried com suas 8 opcoes
             self.untried[pos_atual] = list(range(8))
 
-        # transformando as direcoes do agente atual em numeros de 0 a 7
+        # transformando as direcoes do agente atual em numberos de 0 a 7
         lista_direcoes_agente = [self.action_order[action] for action in self.actions]
         # se todas as direcoes possiveis dessa posicao ja foram exploradas
         if all(action not in lista_direcoes_agente for action in self.untried.get(pos_atual, [])):
