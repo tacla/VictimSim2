@@ -7,6 +7,7 @@ from vs.environment import Env
 from explorer import Explorer
 from rescuer import Rescuer
 from cluster import Cluster
+from map import Map
 
 def main(data_folder_name):
    
@@ -27,29 +28,30 @@ def main(data_folder_name):
 
     # Explorer needs to know rescuer to send the map
     # that's why rescuer is instatiated before
-    exp_1 = Explorer(env, explorer_file, resc)
-    exp_2 = Explorer(env, explorer_file, resc)
-    exp_3 = Explorer(env, explorer_file, resc)
-    exp_4 = Explorer(env, explorer_file, resc)
+    exp = Explorer(env, explorer_file, resc)
+    exp2 = Explorer(env, explorer_file, resc)
+    exp3 = Explorer(env, explorer_file, resc)
+    exp4 = Explorer(env, explorer_file, resc)
 
     # Run the environment simulator
     env.run()
 
-    # Clustering
-    cluster = Cluster()
-    exp_victims = {} # dictionary that will agregate all found victims
+    # Join all maps
+    complete_map = Map()
+    complete_map.map_data = exp.map.map_data | exp2.map.map_data | exp3.map.map_data | exp4.map.map_data
 
-    for explorer in [exp_1, exp_2, exp_3, exp_4]:
-        if explorer.victims != {}:
-            if exp_victims == {}:
-                exp_victims = explorer.victims
+    # Condensate all victims data
+    total_victims = {}
+    for ex in [exp, exp2, exp3, exp4]:
+        if ex.victims != {}:
+            if total_victims == {}:
+                total_victims = ex.victims
             else:
-                exp_victims.update(explorer.victims)
+                total_victims.update(ex.victims)
 
-    # Clusterizacao
-    cluster_victims = cluster.cluster(exp_victims)
+    cluster = Cluster()
+    victims_with_cluster = cluster.cluster_victims(total_victims)
 
-    
         
 if __name__ == '__main__':
     """ To get data from a different folder than the default called data
