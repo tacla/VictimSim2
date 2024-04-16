@@ -40,6 +40,9 @@ def main(data_folder_name):
     complete_map = Map()
     complete_map.map_data = exp.map.map_data | exp2.map.map_data | exp3.map.map_data | exp4.map.map_data
 
+    print("💕")
+    print(complete_map.map_data)
+
     # Condensate all victims data
     total_victims = {}
     for ex in [exp, exp2, exp3, exp4]:
@@ -49,8 +52,8 @@ def main(data_folder_name):
             else:
                 total_victims.update(ex.victims)
 
-    cluster = Cluster()
-    victims_with_cluster = cluster.cluster_victims(total_victims)
+    # cluster = Cluster()
+    # victims_with_cluster = cluster.cluster(total_victims)
 
         
 if __name__ == '__main__':
