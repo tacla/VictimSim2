@@ -10,21 +10,21 @@ One of the rescuer agents is the master rescuer. It is in charge of synchronizin
 To run:
 
 * [clusters] 
-** cluster1.txt
-** ...
-** cluster4.txt
-** seq1.txt
-** ..
-** seq4.txt
+  * cluster1.txt
+  * ...
+  * cluster4.txt
+  * seq1.txt
+  * ...
+  * seq4.txt
 * [cfg_1]
-** explorer_1_config.txt 
-** ... 
-** explorer_4_config.txt
-** rescuer_1_config.txt
-** ...
-** rescuer_4_config.txt
+  * explorer_1_config.txt 
+  * ... 
+  * explorer_4_config.txt
+  * rescuer_1_config.txt
+  * ...
+  * rescuer_4_config.txt
 * [vs]
-** all the .py of vs folder
+  * all the .py of vs folder
 * bfs.py
 * explorer.py
 * main.py
