@@ -8,7 +8,7 @@ import random
 from abc import ABC, abstractmethod
 from .constants import VS
 
-class AbstAgent:
+class AbstAgent(ABC):
     """ This class represents a generic agent and must be implemented by a concrete class. """
 
     # Class attributes
@@ -42,7 +42,9 @@ class AbstAgent:
                
         self.__env = env            # private - ref. to the environment
         self.__body = None          # private - ref. to the physical part of the agent in the env
-        
+        self.config_folder = os.path.dirname(config_file)     # stores the folder where the agents' config files are
+
+
         # Read agents config file for controlling time
         with open(config_file, "r") as file:
 
@@ -102,6 +104,10 @@ class AbstAgent:
     def set_state(self, value):
         """ This protected method allows the environment to change the state of the agent"""
         self.__body._state  = value
+
+    def get_env(self):
+        """ This protected method allows the environment to change the state of the agent"""
+        return self.__env
         
     def walk(self, dx, dy):
         """ Public method for moving the agent's body one cell to any direction (if possible)
