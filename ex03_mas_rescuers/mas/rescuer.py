@@ -1,9 +1,14 @@
 ##  RESCUER AGENT
 ### @Author: Tacla (UTFPR)
 ### Demo of use of VictimSim
-### Not a complete version of DFS; it comes back prematuraly
-### to the base when it enters into a dead end position
-
+### This rescuer version implements:
+### - clustering of victims by quadrants of the explored region 
+### - definition of a sequence of rescue of victims of a cluster
+### - assigning one cluster to one rescuer
+### - calculating paths between pair of victims using breadth-first search
+###
+### One of the rescuers is the master in charge of unifying the maps and the information
+### about the found victims.
 
 import os
 import random
