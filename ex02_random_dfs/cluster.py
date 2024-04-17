@@ -2,59 +2,42 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score, silhouette_samples
+from sklearn.cluster import AgglomerativeClustering
+from kneed import KneeLocator
+from sklearn.cluster import DBSCAN
+
 
 class Cluster():
 
     def __init__(self):
         pass
 
-    def cluster(self, victims):
-        # Clustering using location and vital signs
-        x_victims = []
-        for victim_data in victims.values():
-            x_victims.append([victim_data[0][0]] + [victim_data[0][1]] + victim_data[1])
-        
-        self.number_of_clusters_elbow_curve_analysis(x_victims)
-        self.silhouette_analysis(x_victims)
-        
-        # we are going to use 4 clusters because we have 4 rescuer agents
-        kmeans = KMeans(n_clusters=4, random_state=42)
-        kmeans.fit(X=x_victims)
-        labels = kmeans.labels_
+    def optimal_number_of_clusters_elbow_curve(self, victims):
 
-        i = 0 
-        for id, victim_data in victims.items():
-            victims[id] = (victim_data[0], victim_data[1] + [labels[i]])
-            i += 1
+        y = []
+        x = range(1, 11)
 
-        victims_cluster_1 = [x[0] for x in victims.values() if x[1][-1] == 0]
-        victims_cluster_2 = [x[0] for x in victims.values() if x[1][-1] == 1]
-        victims_cluster_3 = [x[0] for x in victims.values() if x[1][-1] == 2]
-        victims_cluster_4 = [x[0] for x in victims.values() if x[1][-1] == 3]        
-
-        print("*** Clustering report: ***")
-        print("Victims to be rescued by rescuer 1: {}".format(victims_cluster_1))
-        print("Victims to be rescued by rescuer 2: {}".format(victims_cluster_2))
-        print("Victims to be rescued by rescuer 3: {}".format(victims_cluster_3))
-        print("Victims to be rescued by rescuer 4: {}".format(victims_cluster_4))
-
-        return victims
-
-    def number_of_clusters_elbow_curve_analysis(self, victims):
-        sse = []
-
-        # Test different values for K, although we will be using 4 because we have 4 rescuers
-        for k in range(1, 11):
+        for k in x:
             kmeans = KMeans(n_clusters=k, random_state=42)
             kmeans.fit(victims)
-            sse.append(kmeans.inertia_)
-
-        plt.plot(range(1, 11), sse, marker='s', color='purple')
+            y.append(kmeans.inertia_)
+        
+        kn = KneeLocator(
+                    x,
+                    y,
+                    curve='convex',
+                    direction='decreasing',
+                    interp_method='interp1d',
+                ).knee
+        
+        print(f"Number of rescuers found by elbow-curve analysis:{kn}")
+        plt.plot(x, y, marker='s', color='purple')
         plt.title('Curva do cotovelo')
         plt.xlabel('N. de clusters (K)')
         plt.ylabel('Sum of Squared Error (SSE)')
         plt.show()
 
+        return kn
     
     def silhouette_analysis(self, victims):
         
@@ -100,3 +83,92 @@ class Cluster():
             ax.set_xticks([-0.1, 0, 0.2, 0.4, 0.6, 0.8, 1])
             
             plt.show()
+
+    def silhouette_for_n_clusters(self, victims, cluster_labels):
+
+        silhouette_avg = silhouette_score(victims, cluster_labels)
+        print("For ", len(set(cluster_labels)), "clusters, the average silhouette coef. is :", silhouette_avg)
+
+    def cluster_with_kmeans(self, victims):
+        '''
+        Method used by Tarefa 1
+        '''
+        # Clustering using location and vital signs
+        x_victims = []
+        for victim_data in victims.values():
+            x_victims.append([victim_data[0][0]] + [victim_data[0][1]] + victim_data[1])
+        
+
+        # we are going to use 4 clusters because we have 4 rescuer agents
+        kmeans = KMeans(n_clusters=4, random_state=42)
+        kmeans.fit(X=x_victims)
+        labels = kmeans.labels_
+
+        i = 0 
+        for id, victim_data in victims.items():
+            victims[id] = (victim_data[0], victim_data[1] + [labels[i]])
+            i += 1
+
+        victims_cluster_1 = [x[0] for x in victims.values() if x[1][-1] == 0]
+        victims_cluster_2 = [x[0] for x in victims.values() if x[1][-1] == 1]
+        victims_cluster_3 = [x[0] for x in victims.values() if x[1][-1] == 2]
+        victims_cluster_4 = [x[0] for x in victims.values() if x[1][-1] == 3]        
+
+        print("*** Clustering report: ***")
+        print("Victims to be rescued by rescuer 1: {}".format(victims_cluster_1))
+        print("Victims to be rescued by rescuer 2: {}".format(victims_cluster_2))
+        print("Victims to be rescued by rescuer 3: {}".format(victims_cluster_3))
+        print("Victims to be rescued by rescuer 4: {}".format(victims_cluster_4))
+
+        return victims
+
+    def cluster_models(self, method, kn, x_victims):
+        
+        if method == 'kmeans':
+            kmeans = KMeans(n_clusters=kn, random_state=42)
+            kmeans.fit(X=x_victims)
+            labels = kmeans.labels_
+        elif method == 'hierarquical':
+            hierarchical_cluster = AgglomerativeClustering(n_clusters = kn, linkage = "average", metric = "cosine" )
+            labels = hierarchical_cluster.fit_predict(x_victims)
+        elif method == 'dbscan':
+            dbscan_model = DBSCAN(eps=0.25, min_samples=9)
+            dbscan_model.fit(x_victims)
+            labels = dbscan_model.labels_
+
+        return labels
+
+    def cluster_with_victim_class(self, victims, method, n_rescuers_dynamic=True):
+        # TODO: add classification as victim_data[2]
+
+        # Clustering using location,  vital signs and classification
+        x_victims = []
+        for victim_data in victims.values():
+            x_victims.append([victim_data[0][0]] + [victim_data[0][1]] + victim_data[1])# + victim_data[2])
+        
+        kn = 4
+        
+        # if number of rescuers can be dynamic, it will find the optimal numbr of clusters through elbow curve analysis
+        if n_rescuers_dynamic:
+            kn = self.optimal_number_of_clusters_elbow_curve(x_victims)
+        else:
+            print(f"Using static number of rescuers:{kn}")
+
+
+        labels = self.cluster_models(method, kn, x_victims)       
+
+        i = 0 
+        for id, victim_data in victims.items():
+            victims[id] = (victim_data[0], victim_data[1] + [labels[i]])
+            i += 1
+
+        print(f"*** {method} clustering report: ***")
+
+        for cluster in set(labels):
+            c_result = [x[0] for x in victims.values() if x[1][-1] == cluster]
+            print(f"Victims to be rescued by rescuer {cluster}: {c_result}")
+
+        # silhouette analysis to evaluate clustering method
+        self.silhouette_for_n_clusters(x_victims, labels)
+
+        return victims

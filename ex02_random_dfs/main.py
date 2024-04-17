@@ -50,7 +50,9 @@ def main(data_folder_name):
                 total_victims.update(ex.victims)
 
     cluster = Cluster()
-    victims_with_cluster = cluster.cluster_victims(total_victims)
+    cluster.cluster_with_victim_class(total_victims, method='kmeans')
+    cluster.cluster_with_victim_class(total_victims, method='hierarquical')
+    #cluster.cluster_with_victim_class(total_victims, method='dbscan') -- bad classification, neg silhouette
 
         
 if __name__ == '__main__':
