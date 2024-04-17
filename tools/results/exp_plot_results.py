@@ -30,8 +30,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import math
 
-descriptor_file = 'exp_225v_100x80_descriptor.txt'
-results_file = 'exp_225v_100x80_results.txt'
+descriptor_file = 'exp_300v_90x90_descriptor.txt'
+results_file = 'exp_300v_90x90_results.txt'
 
 # Read the CSV file containing descriptors into a pandas DataFrame
 df_descriptor = pd.read_csv(descriptor_file, skipinitialspace=True)
@@ -109,7 +109,7 @@ axes[1].set_title('Mean number of found victims per severity (%)')
 axes[1].set_ylim(0, 1)
 axes[1].set_ylabel('Nb of victims(%)')
 
-print(f"\nFound victims (% mean value over the total of victims)")
+print(f"\nFound victims (mean value over the total of victims)")
 for i in range(len(rel_means)):    
     print(f"Ve{i+1:1d}: {rel_means[i]:.4f}%")
 
@@ -130,7 +130,7 @@ axes[3].set_title('Mean number of saved victims per severity (%)')
 axes[3].set_ylim(0, 1)
 axes[3].set_ylabel('Nb of victims (%)')
 
-print(f"\nSaved victims (% mean value over the total of victims)")
+print(f"\nSaved victims (mean value over the total of victims)")
 for i in range(len(rel_means)):    
     print(f"Vs{i+1:1d}: {rel_means[i]:.4f}%")
 
