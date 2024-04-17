@@ -5,7 +5,8 @@
 ## The map is a dictionaire whose keys are pairs (x, y).
 ## The map contains only visited positions.
 ##
-## Associated to each key, there are [(x,y)] : ( difficulty, vic_id, [actions' results] )
+## An entry in the dictionary is: [(x,y)] : ( difficulty, vic_id, [actions' results] )
+## - (x,y): the key; the position of the grid (or the cell)
 ## - difficulty: the degree of difficulty to access the cell
 ## - vic_id: the victim identification number (if there is one) or VS.NO_VICTIM if there is no victim
 ## - actions' results: the known actions' results from the cell represented as vector of 8 integers, in the following
