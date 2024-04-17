@@ -1,4 +1,4 @@
-This folder contains the results obtained by running the random_dfs explorer and rescur agents with:
+This folder contains the results obtained by running the random_dfs explorer and rescuer agents with:
 * dataset: 132_v_100x80
 * TLIM for the explorer: 2500
 * TLIM for the rescuer: 1500
@@ -21,7 +21,7 @@ Contains the descriptor of the victims file per severity
 
 exp_132v_100x80_results.txt
 -------------------------
-Contains the results of severalruns. Each line corresponds to one run.
+Contains the results of several runs. Each line corresponds to one run.
 * Ve_i: found victims per severity
 * Veg : metric - nb of found victims weighted per severity
 * Vs_i: saved victims per severity
