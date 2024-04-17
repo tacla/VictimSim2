@@ -41,6 +41,6 @@ if __name__ == '__main__':
         data_folder_name = sys.argv[1]
     else:
         data_folder_name = os.path.join("datasets", "data_300v_90x90")
-        config_ag_folder_name = os.path.join("ex03_mas_random_dfs", "config_agnts")
+        config_ag_folder_name = os.path.join("ex03_mas_random_dfs", "cfg_1")
         
     main(data_folder_name, config_ag_folder_name)
