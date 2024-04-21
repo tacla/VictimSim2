@@ -2,27 +2,28 @@ import sys
 import os
 import time
 
-## importa classes
+# importa classes
 from vs.environment import Env
 from explorer import Explorer
 from rescuer import Rescuer
 from cluster import Cluster
 from map import Map
 
+
 def main(data_folder_name):
-   
+
     # Set the path to config files and data files for the environment
     current_folder = os.path.abspath(os.getcwd())
-    data_folder = os.path.abspath(os.path.join(current_folder, data_folder_name))
+    data_folder = os.path.abspath(
+        os.path.join(current_folder, data_folder_name))
 
-    
     # Instantiate the environment
     env = Env(data_folder)
-    
+
     # config files for the agents
     rescuer_file = os.path.join(data_folder, "rescuer_config.txt")
     explorer_file = os.path.join(data_folder, "explorer_config.txt")
-    
+
     # Instantiate agents rescuer and explorer
     resc = Rescuer(env, rescuer_file)
 
@@ -49,17 +50,17 @@ def main(data_folder_name):
             else:
                 total_victims.update(ex.victims)
 
-    cluster = Cluster()
-    victims_with_cluster = cluster.cluster_victims(total_victims)
+    # cluster = Cluster()
+    # victims_with_cluster = cluster.cluster(total_victims)
 
-        
+
 if __name__ == '__main__':
     """ To get data from a different folder than the default called data
     pass it by the argument line"""
-    
+
     if len(sys.argv) > 1:
         data_folder_name = sys.argv[1]
     else:
         data_folder_name = os.path.join("datasets", "data_10v_12x12")
-        
+
     main(data_folder_name)
