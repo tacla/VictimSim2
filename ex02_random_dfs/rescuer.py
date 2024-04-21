@@ -22,7 +22,7 @@ from astar_algorithm import AStarExplorer
 
 # Classe que define o Agente Rescuer com um plano fixo
 class Rescuer(AbstAgent):
-    def __init__(self, env, config_file):
+    def __init__(self, env, config_file, rescuer_id):
         """ 
         @param env: a reference to an instance of the environment class
         @param config_file: the absolute path to the agent's config file"""
@@ -46,6 +46,9 @@ class Rescuer(AbstAgent):
         # Starts in IDLE state.
         # It changes to ACTIVE when the map arrives
         self.set_state(VS.IDLE)
+
+        self.id = rescuer_id
+        self.victims_to_be_saved = []
 
     def go_save_victims(self, map, victims):
         """ The explorer sends the map containing the walls and
@@ -89,11 +92,12 @@ class Rescuer(AbstAgent):
         victims_info_array = [[1, (4, 2), 0], [2, (0, 0), 1], [3, (1, 5), 2],  [
             4, (3, 3), 3], [5, (4, 2), 3], [6, (4, 2), 2], [7, (4, 2), 1]]
         self.sequences = self.sequencia(victims_info_array, [], [], [], 0)
+        #self.sequences = self.sequencia(self.victims_to_be_saved, [], [], [], 0)
         print("🤖 Fim do sequenciamento, rota de salvamento:")
         print(self.sequences)
         print()
         # Salva a sequencia de salvamento desse agente num .txt
-        self.save_sequence_csv(1, self.sequences)
+        self.save_sequence_csv(self.id, self.sequences)
 
     # num: o numero do rescuer, de 1 a 4
     # sequence: a sequencia de salvamento das vitimas, um array de arrays
