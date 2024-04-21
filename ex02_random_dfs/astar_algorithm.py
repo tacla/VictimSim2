@@ -2,6 +2,7 @@ from astar import AStar
 from math import sqrt
 from vs.constants import VS
 
+
 class AStarExplorer(AStar):
     def __init__(self, graph, start, goal, diagonal_cost, line_cost, map):
         self.graph = graph
@@ -13,14 +14,14 @@ class AStarExplorer(AStar):
 
     def neighbors(self, node):
         x, y = node
-        print("verificando os vizinhos de: {}".format(node))
         # Define os vizinhos de um nó como as posições adjacentes que não são obstáculos
-        neighbors = [(x + dx, y + dy) for dx in (-1, 0, 1) for dy in (-1, 0, 1) if (dx != 0 or dy != 0)]
+        neighbors = [(x + dx, y + dy) for dx in (-1, 0, 1)
+                     for dy in (-1, 0, 1) if (dx != 0 or dy != 0)]
         valid_neighbors = []
         for nx, ny in neighbors:
             # Verifica se o vizinho esta no mapa, ou seja, se foi visitado
             # isso garante que ele nao é nem um obstaculo, nem uma parede
-            coordenada = (nx,ny)
+            coordenada = (nx, ny)
             if self.graph[nx][ny] != VS.WALL and self.map.in_map(coordenada):
                 valid_neighbors.append((nx, ny))
         return valid_neighbors
@@ -38,7 +39,7 @@ class AStarExplorer(AStar):
         x1, y1 = current
         x2, y2 = goal
         return abs(x2 - x1) + abs(y2 - y1)
-    
+
     def is_goal_reached(self, current, goal):
         return current == goal
 
