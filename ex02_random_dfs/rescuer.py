@@ -88,21 +88,47 @@ class Rescuer(AbstAgent):
         print("🤖 Inicio do sequenciamento:")
         print()
         victims_info_array = [[1, (4, 2), 0], [2, (0, 0), 1], [3, (1, 5), 2],  [
-            4, (3, 3), 4], [5, (4, 2), 0], [6, (4, 2), 3], [7, (4, 2), 4]]
+            4, (3, 3), 3], [5, (4, 2), 3], [6, (4, 2), 2], [7, (4, 2), 1]]
         self.sequences = self.sequencia(victims_info_array, [], [], [], 0)
         print("🤖 Fim do sequenciamento, rota de salvamento:")
         print(self.sequences)
         print()
+        # Salva a sequencia de salvamento desse agente num .txt
+        self.save_sequence_csv(1, self.sequences)
 
-        def save_sequence_csv(self, sequence, sequence_id):
-            # filename = f"./clusters/seq{sequence_id}.txt"
-            # with open(filename, 'w', newline='') as csvfile:
-            #     writer = csv.writer(csvfile)
-            #     for id, values in sequence.items():
-            #         x, y = values[0]      # x,y coordinates
-            #         vs = values[1]        # list of vital signals
-            #         writer.writerow([id, x, y, vs[6], vs[7]])
-            return
+    # num: o numero do rescuer, de 1 a 4
+    # sequence: a sequencia de salvamento das vitimas, um array de arrays
+    def save_sequence_csv(self, num, sequence):
+        with open(f'seq_{num}.txt', 'w') as file:
+            # Escrevendo o cabeçalho
+            file.write("id, x, y, grav, classe\n")
+
+            # Iterando sobre as informações das vítimas
+            for info in sequence:
+                # Extrair informações
+                id_vitima = info[0]
+                posicao = info[1]
+                gravidade = info[2]
+
+                # Determinar classe com base na gravidade
+                classe = self.determinar_classe(gravidade)
+
+                # Escrever no arquivo
+                file.write(
+                    f"{id_vitima}, {posicao[0]}, {posicao[1]}, {gravidade}, {classe}\n")
+
+    # Função para determinar a classe com base na gravidade
+    def determinar_classe(self, gravidade):
+        if gravidade == 0:
+            return "estável"
+        elif gravidade == 1:
+            return "potencialmente estável"
+        elif gravidade == 2:
+            return "instável"
+        elif gravidade == 3:
+            return "crítico"
+        else:
+            return "desconhecido"
 
     def __depth_search(self, actions_res):
         enough_time = True
@@ -208,14 +234,14 @@ class Rescuer(AbstAgent):
 
         self.plan = self.plan + come_back_plan
 
-# **************
+# *************
 #  Traveling salesman and genetic algorithm
 # *************
 
 # COMO USAR
 #
 # Mandar o array de vitimas para ser sequenciado da seguinte maneira exemplo:
-# victims_info_array = [ [1, (4,2), 0], [2, (0,0), 1], [3, (1,5), 2],  [4, (3,3), 4], [5, (4,2), 0], [6, (4,2), 3], [7, (4,2), 4] ]
+# victims_info_array = [ [1, (4,2), 0], [2, (0,0), 1], [3, (1,5), 2],  [4, (3,3), 3], [5, (4,2), 0], [6, (4,2), 2], [7, (4,2), 3] ]
 # Parametros:
 # [id_vitima, pos, gravidade_vitima], entao para a primeira vitima, temos id_vitima = 1, pos = (4,2), gravidade = 0
 #
