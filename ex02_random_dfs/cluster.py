@@ -3,8 +3,10 @@ import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score, silhouette_samples
 from sklearn.cluster import AgglomerativeClustering
+from scipy.cluster.hierarchy import dendrogram, linkage, fcluster
 from kneed import KneeLocator
 from sklearn.cluster import DBSCAN
+import json
 
 
 class Cluster():
@@ -31,11 +33,11 @@ class Cluster():
                 ).knee
         
         print(f"Number of rescuers found by elbow-curve analysis:{kn}")
-        plt.plot(x, y, marker='s', color='purple')
-        plt.title('Curva do cotovelo')
-        plt.xlabel('N. de clusters (K)')
-        plt.ylabel('Sum of Squared Error (SSE)')
-        plt.show()
+        # plt.plot(x, y, marker='s', color='purple')
+        # plt.title('Curva do cotovelo')
+        # plt.xlabel('N. de clusters (K)')
+        # plt.ylabel('Sum of Squared Error (SSE)')
+        # plt.show()
 
         return kn
     
@@ -151,11 +153,18 @@ class Cluster():
         # if number of rescuers can be dynamic, it will find the optimal numbr of clusters through elbow curve analysis
         if n_rescuers_dynamic:
             kn = self.optimal_number_of_clusters_elbow_curve(x_victims)
+            print(f"Optimal number of clusters would be:{kn}")
         else:
             print(f"Using static number of rescuers:{kn}")
 
+        # if there are less clusters than rescuers, adapt to 4 clusters
+        kn = 4 if kn < 4 else kn
 
-        labels = self.cluster_models(method, kn, x_victims)       
+        labels = self.cluster_models(method, kn, x_victims)     
+
+        # Adapt the number of clusters to be equal to number of rescuers  
+        if kn > 4:
+            labels = self.adapt_clusters_to_4rescuers(x_victims, method='hierarquical')
 
         i = 0 
         for id, victim_data in victims.items():
@@ -167,8 +176,39 @@ class Cluster():
         for cluster in set(labels):
             c_result = [x[0] for x in victims.values() if x[1][-1] == cluster]
             print(f"Victims to be rescued by rescuer {cluster}: {c_result}")
+            with open(f'cluster{cluster+1}.txt', 'w') as file:
+                file.write(json.dumps(c_result))
 
         # silhouette analysis to evaluate clustering method
         self.silhouette_for_n_clusters(x_victims, labels)
 
         return victims
+    
+
+    def adapt_clusters_to_4rescuers(self, x_victims, method=None):
+
+        if method == 'hierarquical':
+            # Cut the dendrogram to obtain n clusters == n rescuers
+            num_clusters = 4
+
+            Z = linkage(x_victims, method='average', metric='cosine')
+            labels = fcluster(Z, num_clusters, criterion='maxclust')
+        elif method == 'kmeans':
+            desired_num_clusters = 4  # Number of clusters in the end
+
+            clusters_to_merge = num_clusters - desired_num_clusters
+
+            for _ in range(clusters_to_merge):
+                # Compute pairwise distances between centroids
+                centroid_distances = np.linalg.norm(centroids[:, np.newaxis] - centroids[np.newaxis, :], axis=-1)
+
+                np.fill_diagonal(centroid_distances, np.inf)
+                closest_clusters = np.unravel_index(np.argmin(centroid_distances), centroid_distances.shape)
+
+                merged_centroid = np.mean([centroids[closest_clusters[0]], centroids[closest_clusters[1]]], axis=0)
+                centroids = np.delete(centroids, closest_clusters[1], axis=0)
+                centroids[closest_clusters[0]] = merged_centroid
+
+                labels[labels == closest_clusters[1]] = closest_clusters[0]
+
+        return labels
