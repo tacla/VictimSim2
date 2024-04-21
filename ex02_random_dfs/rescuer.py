@@ -41,6 +41,8 @@ class Rescuer(AbstAgent):
         self.x = 0                  # the current x position of the rescuer when executing the plan
         self.y = 0                  # the current y position of the rescuer when executing the plan
 
+        self.sequences = []   # the sequence of visit of victims for each cluster
+
         # Starts in IDLE state.
         # It changes to ACTIVE when the map arrives
         self.set_state(VS.IDLE)
@@ -87,10 +89,20 @@ class Rescuer(AbstAgent):
         print()
         victims_info_array = [[1, (4, 2), 0], [2, (0, 0), 1], [3, (1, 5), 2],  [
             4, (3, 3), 4], [5, (4, 2), 0], [6, (4, 2), 3], [7, (4, 2), 4]]
-        rota_final = self.sequencia(victims_info_array, [], [], [], 0)
+        self.sequences = self.sequencia(victims_info_array, [], [], [], 0)
         print("🤖 Fim do sequenciamento, rota de salvamento:")
-        print(rota_final)
+        print(self.sequences)
         print()
+
+        def save_sequence_csv(self, sequence, sequence_id):
+            # filename = f"./clusters/seq{sequence_id}.txt"
+            # with open(filename, 'w', newline='') as csvfile:
+            #     writer = csv.writer(csvfile)
+            #     for id, values in sequence.items():
+            #         x, y = values[0]      # x,y coordinates
+            #         vs = values[1]        # list of vital signals
+            #         writer.writerow([id, x, y, vs[6], vs[7]])
+            return
 
     def __depth_search(self, actions_res):
         enough_time = True
