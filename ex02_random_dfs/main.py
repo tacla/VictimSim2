@@ -1,8 +1,7 @@
 import sys
 import os
 import time
-import pandas as pd
-from joblib import load
+
 
 # importa classes
 from vs.environment import Env
@@ -10,6 +9,7 @@ from explorer import Explorer
 from rescuer import Rescuer
 from cluster import Cluster
 from map import Map
+from classifier import Classifier
 
 
 def main(data_folder_name):
@@ -53,25 +53,9 @@ def main(data_folder_name):
                 total_victims.update(ex.victims)
     
     # Classification
-    df_victims = pd.DataFrame()
-    ids = []
-    qpa = []
-    pulso = []
-    resp = []
-    for v in total_victims.values():
-        ids.append(v[1][0])
-        qpa.append(v[1][3])
-        pulso.append(v[1][4])
-        resp.append(v[1][5])
-    df_victims['id'] = pd.Series(ids)
-    df_victims['qpa'] = pd.Series(qpa)
-    df_victims['pulso'] = pd.Series(pulso)
-    df_victims['resp'] = pd.Series(resp)
-
-    tree_model = load('decision_tree_model.joblib')
-    X = df_victims
-    y_pred = tree_model.predict(X)
-    print(y_pred)
+    classifier = Classifier(total_victims)
+    total_victims = classifier.make_prediction()
+    
     # cluster = Cluster()
     # victims_with_cluster = cluster.cluster(total_victims)
 
