@@ -11,7 +11,6 @@ from cluster import Cluster
 from map import Map
 from classifier import Classifier
 
-
 def main(data_folder_name):
 
     # Set the path to config files and data files for the environment
@@ -27,7 +26,7 @@ def main(data_folder_name):
     explorer_file = os.path.join(data_folder, "explorer_config.txt")
 
     # Instantiate agents rescuer and explorer
-    resc = Rescuer(env, rescuer_file)
+    resc = Rescuer(env, rescuer_file, rescuer_id=1)
 
     # Explorer needs to know rescuer to send the map
     # that's why rescuer is instatiated before
@@ -56,11 +55,18 @@ def main(data_folder_name):
     classifier = Classifier(total_victims)
     total_victims = classifier.make_prediction()
 
+<<<<<<< HEAD
     print(total_victims)
     
     # cluster = Cluster()
     # victims_with_cluster = cluster.cluster(total_victims)
+=======
+    cluster = Cluster()
+    vc_1, vc_2, vc_3, vc_4 = cluster.cluster_with_victim_class(total_victims, method='hierarquical')
+>>>>>>> tarefa2-clusterizacao
 
+    resc.victims_to_be_saved = vc_1
+    
 
 if __name__ == '__main__':
     """ To get data from a different folder than the default called data
