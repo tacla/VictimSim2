@@ -55,15 +55,8 @@ def main(data_folder_name):
     classifier = Classifier(total_victims)
     total_victims = classifier.make_prediction()
 
-<<<<<<< HEAD
-    print(total_victims)
-    
-    # cluster = Cluster()
-    # victims_with_cluster = cluster.cluster(total_victims)
-=======
     cluster = Cluster()
-    vc_1, vc_2, vc_3, vc_4 = cluster.cluster_with_victim_class(total_victims, method='hierarquical')
->>>>>>> tarefa2-clusterizacao
+    vc_1, vc_2, vc_3, vc_4 = cluster.cluster_with_victim_class(total_victims, method='kmeans')
 
     resc.victims_to_be_saved = vc_1
     

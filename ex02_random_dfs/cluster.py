@@ -146,7 +146,7 @@ class Cluster():
         # Clustering using location,  vital signs and classification
         x_victims = []
         for victim_data in victims.values():
-            x_victims.append([victim_data[0][0]] + [victim_data[0][1]] + victim_data[1])# + victim_data[2])
+            x_victims.append([victim_data[0][0]] + [victim_data[0][1]] + victim_data[1][-1])
         
         kn = 4
         
@@ -176,17 +176,16 @@ class Cluster():
         for cluster in set(labels):
             c_result = [x[0] for x in victims.values() if x[1][-1] == cluster]
             print(f"Victims to be rescued by rescuer {cluster}: {c_result}")
-            with open(f'cluster{cluster+1}.txt', 'w') as file:
+            with open(f'ex02_random_dfs/cluster{cluster+1}.txt', 'w') as file:
                 file.write(json.dumps(c_result))
 
         # silhouette analysis to evaluate clustering method
         self.silhouette_for_n_clusters(x_victims, labels)
 
-        # gravidade tá mockada, precisamos mudar para a classificação
-        victims_cluster_1 = [[1, x[0], 0] for x in victims.values() if x[1][-1] == 1]
-        victims_cluster_2 = [[2, x[0], 1] for x in victims.values() if x[1][-1] == 2]
-        victims_cluster_3 = [[3, x[0], 2] for x in victims.values() if x[1][-1] == 3]
-        victims_cluster_4 = [[4, x[0], 3] for x in victims.values() if x[1][-1] == 4]
+        victims_cluster_1 = [[1, x[0], x[1][-1]] for x in victims.values() if x[1][-2] == 1]
+        victims_cluster_2 = [[2, x[0], x[1][-1]] for x in victims.values() if x[1][-2] == 2]
+        victims_cluster_3 = [[3, x[0], x[1][-1]] for x in victims.values() if x[1][-2] == 3]
+        victims_cluster_4 = [[4, x[0], x[1][-1]] for x in victims.values() if x[1][-2] == 4]
 
         return victims_cluster_1, victims_cluster_2, victims_cluster_3, victims_cluster_4
     
