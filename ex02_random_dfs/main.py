@@ -55,6 +55,8 @@ def main(data_folder_name):
     # Classification
     classifier = Classifier(total_victims)
     total_victims = classifier.make_prediction()
+
+    print(total_victims)
     
     # cluster = Cluster()
     # victims_with_cluster = cluster.cluster(total_victims)

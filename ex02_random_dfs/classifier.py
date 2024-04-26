@@ -1,6 +1,7 @@
 import pandas as pd
 from joblib import load
 import os
+import pickle
 
 class Classifier():
     def __init__(self,total_victims):
@@ -24,7 +25,9 @@ class Classifier():
         self.df_victims['resp'] = pd.Series(resp)
     
     def make_prediction(self):
-        tree_model = load(os.getcwd() + '\\ex02_random_dfs\\decision_tree_model.joblib')
+
+        #tree_model = load(os.getcwd() + '\\ex02_random_dfs\\decision_tree_model.joblib')
+        tree_model = pickle.load(open(f"{os.getcwd()}/ex02_random_dfs/decision_tree_model.pkl", "rb"))
         X = self.df_victims
         y_pred = tree_model.predict(X)
         i = 0
