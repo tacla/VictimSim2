@@ -26,7 +26,7 @@ def main(data_folder_name):
     explorer_file = os.path.join(data_folder, "explorer_config.txt")
 
     # Instantiate agents rescuer and explorer
-    resc = Rescuer(env, rescuer_file, rescuer_id=1)
+    resc = Rescuer(env, rescuer_file, nb_of_explorers=4)
 
     # Explorer needs to know rescuer to send the map
     # that's why rescuer is instatiated before
@@ -58,7 +58,8 @@ def main(data_folder_name):
     cluster = Cluster()
     vc_1, vc_2, vc_3, vc_4 = cluster.cluster_with_victim_class(total_victims, method='kmeans')
 
-    resc.victims_to_be_saved = vc_1
+    print(vc_1)
+    #resc.victims_to_be_saved = vc_1
     
 
 if __name__ == '__main__':
