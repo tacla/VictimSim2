@@ -34,6 +34,8 @@ class Stack:
 
 class Explorer(AbstAgent):
     instance_count = 0  #Class variable to keep track of the count of instances
+    """ class attribute """
+    MAX_DIFFICULTY = 1             # the maximum degree of difficulty to enter into a cell
 
     def __init__(self, env, config_file, resc):
         """ Construtor do agente random on-line
@@ -45,7 +47,8 @@ class Explorer(AbstAgent):
         super().__init__(env, config_file)
         Explorer.instance_count += 1
         self.id = Explorer.instance_count  #Unique id for the explorer
-        self.walk_stack = Stack()  # a stack to store the movements
+        self.walk_stack = Stack()  # a stack to store the movements7
+        self.walk_time = 0         # time consumed to walk when exploring (to decide when to come back)
         self.set_state(VS.ACTIVE)  # explorer is active since the begin
         self.resc = resc           # reference to the rescuer agent
         self.x = 0                 # current x position relative to the origin 0

@@ -40,6 +40,12 @@ class Map:
             @param actions_res: the results of the possible actions from the position (x, y) """
         self.map_data[coord] = (difficulty, victim_seq, actions_res)
 
+    def update(self, another_map):
+        """ Itupdates the current map with the entries of another map.
+            If the keys are identical, the entry of the another map replaces the entry of the current map.
+            @param another_map: other instance of Map """
+        self.map_data.update(another_map.map_data)
+
     def draw(self):
         if not self.map_data:
             print("Map is empty.")
