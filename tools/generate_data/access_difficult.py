@@ -56,7 +56,7 @@ with open('env_obst.txt', 'r') as obst_file:
         obstacles.append([int(row[0]), int(row[1]), float(row[2])])
 
 # Open output CSV file
-with open('difficutly.txt', 'w', newline='') as output_file:
+with open('difficulty.txt', 'w', newline='') as output_file:
     writer = csv.writer(output_file)
 
     # Write header
