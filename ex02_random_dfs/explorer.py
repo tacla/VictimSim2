@@ -189,8 +189,6 @@ class Explorer(AbstAgent):
             if seq != VS.NO_VICTIM:
                 vs = self.read_vital_signals()
                 self.victims[vs[0]] = ((self.x, self.y), vs)
-                if self.get_rtime() < 3779:
-                    print('kkk')
                 print(f"{self.NAME} Victim found at ({self.x}, {self.y}), rtime: {self.get_rtime()}")
                 #print(f"{self.NAME} Seq: {seq} Vital signals: {vs}")
             

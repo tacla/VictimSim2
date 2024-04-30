@@ -192,13 +192,13 @@ class Cluster():
         # silhouette analysis to evaluate clustering method
         self.silhouette_for_n_clusters(x_victims, labels)
 
-        victims_cluster_1 = [[1, x[0], x[1][-1]] for x in victims.values() if x[1][-2] == 1]
-        victims_cluster_2 = [[2, x[0], x[1][-1]] for x in victims.values() if x[1][-2] == 2]
-        victims_cluster_3 = [[3, x[0], x[1][-1]] for x in victims.values() if x[1][-2] == 3]
-        victims_cluster_4 = [[4, x[0], x[1][-1]] for x in victims.values() if x[1][-2] == 4]
+        victims_cluster_1 = [[x[1][0], x[0], x[1][-1]] for x in victims.values() if x[1][-2] == 1]
+        victims_cluster_2 = [[x[1][0], x[0], x[1][-1]] for x in victims.values() if x[1][-2] == 2]
+        victims_cluster_3 = [[x[1][0], x[0], x[1][-1]] for x in victims.values() if x[1][-2] == 3]
+        victims_cluster_4 = [[x[1][0], x[0], x[1][-1]] for x in victims.values() if x[1][-2] == 4]
 
-        return victims_cluster_1, victims_cluster_2, victims_cluster_3, victims_cluster_4, dfs
-    
+        return {1:victims_cluster_1,2:victims_cluster_2,3:victims_cluster_3,4:victims_cluster_4}, dfs
+
 
     def adapt_clusters_to_4rescuers(self, x_victims, method=None):
 
