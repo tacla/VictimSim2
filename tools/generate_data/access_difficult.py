@@ -3,15 +3,16 @@
 ## - the Euclidian distance of the victim to the base: victim's (x, y) coming from the env_victims.txt to the (xb, yb)
 ## - the sev_value: the severity of injury of a victim, a float value coming from the env_vital_signals.txt
 ##
-## This dataset should be completed with to be used in supervised learning, for instance, with a class label
-## representing jointly the difficulty of access and the injury severity. It is useful for ordering the victims' rescue.
+## This dataset should be completed, for instance, with a class label to be used in supervised learning
+## representing jointly the difficulty of access and the injury severity. 
+## It may be useful for ordering the victims' rescue.
 ##
-## Input: env_victims.txt and env_vital_signals.txt (same number of victims), and env_obst.txt
-## Output: difficulty.txt (the generated dataset)
+##  Input: env_victims.txt and env_vital_signals.txt (same number of victims), and env_obst.txt
+##  Output: difficulty.txt (the generated dataset)
 ##
-## You have to set these variables before running:
-## - xmax, ymax: the upper indexes for x and y
-## - xb, yb: the base coordinates
+##  You have to set these variables before running:
+##  - xmax, ymax: the upper indexes for x and y
+##  - xb, yb: the base coordinates
 
 import csv
 import math
