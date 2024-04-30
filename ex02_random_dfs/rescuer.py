@@ -20,10 +20,13 @@ import random
 from astar_algorithm import AStarExplorer
 import csv
 import sys
+from classifier import Classifier
+from cluster import Cluster
+from bfs import BFS
 
 ## Classe que define o Agente Rescuer com um plano fixo
 class Rescuer(AbstAgent):
-    def __init__(self, env, config_file, nb_of_explorers=1,clusters=[]):
+    def __init__(self, env, config_file, config_folder, nb_of_explorers=1,clusters=[]):
         """ 
         @param env: a reference to an instance of the environment class
         @param config_file: the absolute path to the agent's config file
@@ -46,30 +49,26 @@ class Rescuer(AbstAgent):
         self.x = 0                   # the current x position of the rescuer when executing the plan
         self.y = 0                   # the current y position of the rescuer when executing the plan
         self.clusters = clusters     # the clusters of victims this agent should take care of - see the method cluster_victims
-        self.sequences = clusters    # the sequence of visit of victims for each cluster 
+        self.sequences = []    # the sequence of visit of victims for each cluster 
+        self.config_folder = config_folder
+        self.env = env
         
                 
         # Starts in IDLE state.
         # It changes to ACTIVE when the map arrives
         self.set_state(VS.IDLE)
 
-    def save_cluster_csv(self, cluster, cluster_id):
-        filename = f"./clusters/cluster{cluster_id}.txt"
-        with open(filename, 'w', newline='') as csvfile:
+    def save_cluster_csv(self, df, cluster_id):
+        filename = f"clusters/cluster{cluster_id}.txt"
+        with open(os.path.join("ex02_random_dfs", filename), 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
-            for vic_id, values in cluster.items():
-                x, y = values[0]      # x,y coordinates
-                vs = values[1]        # list of vital signals
-                writer.writerow([vic_id, x, y, vs[6], vs[7]])
-
-    def save_sequence_csv(self, sequence, sequence_id):
-        filename = f"./clusters/seq{sequence_id}.txt"
-        with open(filename, 'w', newline='') as csvfile:
-            writer = csv.writer(csvfile)
-            for id, values in sequence.items():
-                x, y = values[0]      # x,y coordinates
-                vs = values[1]        # list of vital signals
-                writer.writerow([id, x, y, vs[6], vs[7]])
+            for i in range(len(df)):
+                id = df.loc[i,'id'] 
+                x = df.loc[i,'x']      # x coordinate
+                y = df.loc[i,'y']      # y coordinate
+                grav = df.loc[i,'grav']
+                classe = df.loc[i,'classe']
+                writer.writerow([id, x, y, grav, classe])
 
     def cluster_victims(self):
         """ this method does a naive clustering of victims per quadrant: victims in the
@@ -127,11 +126,13 @@ class Rescuer(AbstAgent):
             This method should add the vital signals(vs) of the self.victims dictionary with these two values.
 
             This implementation assigns random values to both, severity value and class"""
-
-        for vic_id, values in self.victims.items():
-            severity_value = random.uniform(0.1, 99.9)          # to be replaced by a regressor 
-            severity_class = random.randint(1, 4)               # to be replaced by a classifier
-            values[1].extend([severity_value, severity_class])  # append to the list of vital signals; values is a pair( (x,y), [<vital signals list>] )
+        # Classification
+        classifier = Classifier(self.victims)
+        self.victims = classifier.make_prediction()
+        #for vic_id, values in self.victims.items():    
+            #severity_value = random.uniform(0.1, 99.9)          # to be replaced by a regressor 
+            #severity_class = random.randint(1, 4)               # to be replaced by a classifier
+            #values[1].extend([severity_class])  # append to the list of vital signals; values is a pair( (x,y), [<vital signals list>] )
 
     # Populacao inicial: Gerando uma população inicial de soluções (permutações) de maneira aleatória
     # Gera quatro permutacoes de rotas usando o caixeiro viajante. Ou seja, quatro individuos
@@ -172,12 +173,6 @@ class Rescuer(AbstAgent):
         tamanho = len(shortest_path)
 
         return tamanho
-
-    def find_shortest_path(self, graph, start, goal):
-        astar = AStarExplorer(graph, start, goal,
-                              self.COST_DIAG, self.COST_LINE, self.map)
-        path = list(astar.find_path())
-        return path
 
     # Retorna um objeto adjacency_matrix[i][j], que vale 1 se há uma aresta entre os vértices i e j, e 0 caso contrário.
     # Cada vértice na matriz corresponde a uma posição visitada pelo agente no mapa.
@@ -372,7 +367,7 @@ class Rescuer(AbstAgent):
         else:
             return "desconhecido"
 
-    def sequencing(self):
+    def sequencing(self, i):
         """ Currently, this method sort the victims by the x coordinate followed by the y coordinate
             @TODO It must be replaced by a Genetic Algorithm that finds the possibly best visiting order """
 
@@ -390,7 +385,7 @@ class Rescuer(AbstAgent):
         print(self.sequences)
         print()
         # Salva a sequencia de salvamento desse agente num .txt
-        self.save_sequence_csv(self.id, self.sequences)
+        self.save_sequence_csv(i, self.sequences)
 
     def planner(self):
         """ A method that calculates the path between victims: walk actions in a OFF-LINE MANNER (the agent plans, stores the plan, and
@@ -398,7 +393,7 @@ class Rescuer(AbstAgent):
 
 
         # let's instantiate the breadth-first search
-        bfs = BFS(self.map, self.COST_LINE, self.COST_DIAG)
+        # bfs = BFS(self.map, self.COST_LINE, self.COST_DIAG)
 
         # for each victim of the first sequence of rescue for this agent, we're going go calculate a path
         # starting at the base - always at (0,0) in relative coords
@@ -409,20 +404,19 @@ class Rescuer(AbstAgent):
         # we consider only the first sequence (the simpler case)
         # The victims are sorted by x followed by y positions: [vic_id]: ((x,y), [<vs>]
 
-        sequence = self.sequences[0]
+        sequences = self.sequences
         start = (0,0) # always from starting at the base
-        for vic_id in sequence:
-            goal = sequence[vic_id][0]
-            plan, time = bfs.search(start, goal, self.plan_rtime)
-            self.plan = self.plan + plan
-            self.plan_rtime = self.plan_rtime - time
-            start = goal
+        for victims in sequences:
+            goal = victims[1]
+            pathFound = self.walk_with_astar(start, goal)
+            if pathFound:
+                start = goal
+            else:
+                continue
 
         # Plan to come back to the base
         goal = (0,0)
-        plan, time = bfs.search(start, goal, self.plan_rtime)
-        self.plan = self.plan + plan
-        self.plan_rtime = self.plan_rtime - time
+        pathFound = self.walk_with_astar(start, goal)
            
 
     def sync_explorers(self, explorer_map, victims):
@@ -446,22 +440,22 @@ class Rescuer(AbstAgent):
             #self.map.draw()
             #print(f"{self.NAME} found victims by all explorers:\n{self.victims}")
 
-            #@TODO predict the severity and the class of victims' using a classifier
+            #predict the severity and the class of victims' using a classifier
             self.predict_severity_and_class()
 
-            #@TODO cluster the victims possibly using the severity and other criteria
-            # Here, there 4 clusters
-            clusters_of_vic = self.cluster_victims()
+            cluster = Cluster()
+            vc_1, vc_2, vc_3, vc_4, dfs = cluster.cluster_with_victim_class(self.victims, method='kmeans')
+            victim_clusters = [vc_1,vc_2,vc_3,vc_4]
 
-            for i, cluster in enumerate(clusters_of_vic):
-                self.save_cluster_csv(cluster, i+1)    # file names start at 1
+            for i in range(4):
+                self.save_cluster_csv(dfs[i], i+1)    # file names start at 1 
   
             # Instantiate the other rescuers
             rescuers = [None] * 4
             rescuers[0] = self                    # the master rescuer is the index 0 agent
 
             # Assign the cluster the master agent is in charge of 
-            self.clusters = [clusters_of_vic[0]]  # the first one
+            self.clusters = [victim_clusters[0]]  # the first one
 
             # Instantiate the other rescuers and assign the clusters to them
             for i in range(1, 4):    
@@ -469,25 +463,16 @@ class Rescuer(AbstAgent):
                 filename = f"rescuer_{i+1:1d}_config.txt"
                 config_file = os.path.join(self.config_folder, filename)
                 # each rescuer receives one cluster of victims
-                rescuers[i] = Rescuer(self.get_env(), config_file, 4, [clusters_of_vic[i]]) 
+                rescuers[i] = Rescuer(self.env, config_file, self.config_folder, 4, [victim_clusters[i]]) 
                 rescuers[i].map = self.map     # each rescuer have the map
-
-            
+                
             # Calculate the sequence of rescue for each agent
             # In this case, each agent has just one cluster and one sequence
             self.sequences = self.clusters         
 
             # For each rescuer, we calculate the rescue sequence 
             for i, rescuer in enumerate(rescuers):
-                rescuer.sequencing()         # the sequencing will reorder the cluster
-                
-                for j, sequence in enumerate(rescuer.sequences):
-                    if j == 0:
-                        self.save_sequence_csv(sequence, i+1)              # primeira sequencia do 1o. cluster 1: seq1 
-                    else:
-                        self.save_sequence_csv(sequence, (i+1)+ j*10)      # demais sequencias do 1o. cluster: seq11, seq12, seq13, ...
-
-            
+                rescuer.sequencing(i+1)         # the sequencing will reorder the cluster            
                 rescuer.planner()            # make the plan for the trajectory
                 rescuer.set_state(VS.ACTIVE) # from now, the simulator calls the deliberation method 
     
@@ -712,38 +697,105 @@ class Rescuer(AbstAgent):
 
 #     # num: o numero do rescuer, de 1 a 4
 #     # sequence: a sequencia de salvamento das vitimas, um array de arrays
-#     def save_sequence_csv(self, num, sequence):
-#         with open(f'seq_{num}.txt', 'w') as file:
-#             # Escrevendo o cabeçalho
-#             file.write("id, x, y, grav, classe\n")
+    def save_sequence_csv(self, num, sequence):
+        with open(f'seq_{num}.txt', 'w') as file:
+            # Escrevendo o cabeçalho
+            file.write("id, x, y, grav, classe\n")
 
-#             # Iterando sobre as informações das vítimas
-#             for info in sequence:
-#                 # Extrair informações
-#                 id_vitima = info[0]
-#                 posicao = info[1]
-#                 gravidade = info[2]
+            # Iterando sobre as informações das vítimas
+            for info in sequence:
+                # Extrair informações
+                id_vitima = info[0]
+                posicao = info[1]
+                gravidade = info[2]
 
-#                 # Determinar classe com base na gravidade
-#                 classe = self.determinar_classe(gravidade)
+                # Determinar classe com base na gravidade
+                classe = self.determinar_classe(gravidade)
 
-#                 # Escrever no arquivo
-#                 file.write(
-#                     f"{id_vitima}, {posicao[0]}, {posicao[1]}, {gravidade}, {classe}\n")
+                # Escrever no arquivo
+                file.write(
+                    f"{id_vitima}, {posicao[0]}, {posicao[1]}, {gravidade}, {classe}\n")
 
-#     # Função para determinar a classe com base na gravidade
-#     def determinar_classe(self, gravidade):
-#         if gravidade == 0:
-#             return "estável"
-#         elif gravidade == 1:
-#             return "potencialmente estável"
-#         elif gravidade == 2:
-#             return "instável"
-#         elif gravidade == 3:
-#             return "crítico"
-#         else:
-#             return "desconhecido"
+    # Função para determinar a classe com base na gravidade
+    def determinar_classe(self, gravidade):
+        if gravidade == 0:
+            return "estável"
+        elif gravidade == 1:
+            return "potencialmente estável"
+        elif gravidade == 2:
+            return "instável"
+        elif gravidade == 3:
+            return "crítico"
+        else:
+            return "desconhecido"
 
+    # **************
+    #  A-star
+    # *************
+
+    # Chama o algoritmo do a* para achar o menor caminho
+    def find_shortest_path(self, graph, start, goal):
+        astar = AStarExplorer(graph, start, goal, self.COST_DIAG, self.COST_LINE, self.map)
+        path = list(astar.find_path())
+        return path
+    
+    # Retorna um objeto adjacency_matrix[i][j], que vale 1 se há uma aresta entre os vértices i e j, e 0 caso contrário. 
+    # Cada vértice na matriz corresponde a uma posição visitada pelo agente no mapa.
+    def build_adjacency_matrix(self):
+        adjacency_matrix = [[0] * len(self.map.map_data) for _ in range(len(self.map.map_data))]
+
+        # Mapeia as coordenadas visitadas para seus índices na matriz
+        coord_to_index = {}
+        index = 0
+        for coord in self.map.map_data.keys():
+            coord_to_index[coord] = index
+            index += 1
+
+        # Preenche a matriz de adjacências
+        for coord, data in self.map.map_data.items():
+            x, y = coord
+            for dx in [-1, 0, 1]:
+                for dy in [-1, 0, 1]:
+                    if dx == 0 and dy == 0:
+                        continue  # Ignora a própria posição
+                    neighbor_coord = (x + dx, y + dy)
+                    if self.map.in_map(neighbor_coord):
+                        # Se a vizinhança foi visitada, atualize a matriz de adjacências
+                        if data[0] != VS.WALL and self.map.map_data[neighbor_coord][0] != VS.WALL:
+                            adjacency_matrix[coord_to_index[coord]][coord_to_index[neighbor_coord]] = 1
+
+        return adjacency_matrix
+    
+    def walk_with_astar(self, start, goal):
+        # monta grafo com as posicoes exploradas (o mapa) usando matriz de adjacencias
+        adjacency_matrix = self.build_adjacency_matrix()
+
+        # Uso do A* para achar o caminho mais curto de volta
+        shortest_path = self.find_shortest_path(adjacency_matrix, start, goal)
+        
+        # Verificar se o caminho foi encontrado
+        if len(shortest_path) >= 2:
+            # O próximo movimento será a próxima posição no caminho mais curto
+            next_position = shortest_path[0]  # A primeira posição é a atual
+            dx = next_position[0] + self.x
+            dy = next_position[1] + self.y
+
+            # Executar o movimento
+            result = self.walk(dx, dy)
+
+            # Verificar se o movimento foi bem-sucedido
+            if result == VS.EXECUTED:
+                # Atualizar a posição do agente
+                self.x = shortest_path[1][0]
+                self.y = shortest_path[1][1]
+                return True
+            elif result == VS.BUMPED:
+                print(f"{self.NAME}: when coming back bumped at ({self.x+dx}, {self.y+dy}) , rtime: {self.get_rtime()}")
+                return False
+        else:
+            # Se o caminho não foi encontrado, não há ação a ser tomada
+            print("Caminho não encontrado.")
+            return False
     # def __depth_search(self, actions_res):
     #     enough_time = True
     #     # print(f"\n{self.NAME} actions results: {actions_res}")

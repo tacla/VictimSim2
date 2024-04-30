@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score, silhouette_samples
@@ -166,18 +167,27 @@ class Cluster():
         if kn > 4:
             labels = self.adapt_clusters_to_4rescuers(x_victims, method='hierarquical')
 
-        i = 0 
+        i = 0
         for id, victim_data in victims.items():
             victims[id] = (victim_data[0], victim_data[1] + [labels[i]])
             i += 1
 
         print(f"*** {method} clustering report: ***")
 
+        dfs = []
         for cluster in set(labels):
             c_result = [x[0] for x in victims.values() if x[1][-1] == cluster]
             print(f"Victims to be rescued by rescuer {cluster}: {c_result}")
-            with open(f'ex02_random_dfs/cluster{cluster+1}.txt', 'w') as file:
-                file.write(json.dumps(c_result))
+            df_victims = pd.DataFrame(columns=['id','x','y','grav','classe'])
+            df_victims['id'] = pd.Series([value[1][0] for value in victims.values()])
+            df_victims['x'] = pd.Series([value[0][0] for value in victims.values()])
+            df_victims['y'] = pd.Series([value[0][1] for value in victims.values()])
+            df_victims['grav'] = pd.Series(np.zeros(len(victims)))
+            df_victims['classe'] = pd.Series([value[1][-2] for value in victims.values()])
+            print(df_victims)
+            dfs.append(df_victims)
+            #with open(f'ex02_random_dfs/cluster{cluster+1}.txt', 'w') as file:
+                #file.write(json.dumps(c_result))
 
         # silhouette analysis to evaluate clustering method
         self.silhouette_for_n_clusters(x_victims, labels)
@@ -187,7 +197,7 @@ class Cluster():
         victims_cluster_3 = [[3, x[0], x[1][-1]] for x in victims.values() if x[1][-2] == 3]
         victims_cluster_4 = [[4, x[0], x[1][-1]] for x in victims.values() if x[1][-2] == 4]
 
-        return victims_cluster_1, victims_cluster_2, victims_cluster_3, victims_cluster_4
+        return victims_cluster_1, victims_cluster_2, victims_cluster_3, victims_cluster_4, dfs
     
 
     def adapt_clusters_to_4rescuers(self, x_victims, method=None):

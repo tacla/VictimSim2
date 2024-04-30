@@ -1,8 +1,0 @@
-id, x, y, grav, classe
-4, 3, 3, 3, crítico
-3, 1, 5, 2, instável
-2, 0, 0, 1, potencialmente estável
-5, 4, 2, 3, crítico
-6, 4, 2, 2, instável
-7, 4, 2, 1, potencialmente estável
-1, 4, 2, 0, estável

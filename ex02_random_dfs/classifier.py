@@ -29,7 +29,7 @@ class Classifier():
         #tree_model = load(os.getcwd() + '\\ex02_random_dfs\\decision_tree_model.joblib')
         tree_model = pickle.load(open(f"{os.getcwd()}/ex02_random_dfs/decision_tree_model.pkl", "rb"))
         X = self.df_victims
-        y_pred = tree_model.predict(X)
+        y_pred = tree_model.predict(X)   
         i = 0
         for v in self.total_victims.values():
             v[1].append(y_pred[i])

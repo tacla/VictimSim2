@@ -37,14 +37,14 @@ class Explorer(AbstAgent):
     """ class attribute """
     MAX_DIFFICULTY = 1             # the maximum degree of difficulty to enter into a cell
 
-    def __init__(self, env, config_file, resc):
+    def __init__(self, env, config_file, env_file, resc):
         """ Construtor do agente random on-line
         @param env: a reference to the environment 
         @param config_file: the absolute path to the explorer's config file
         @param resc: a reference to the rescuer agent to invoke when exploration finishes
         """
 
-        super().__init__(env, config_file)
+        super().__init__(env, config_file)                
         Explorer.instance_count += 1
         self.id = Explorer.instance_count  #Unique id for the explorer
         self.walk_stack = Stack()  # a stack to store the movements7
@@ -189,6 +189,8 @@ class Explorer(AbstAgent):
             if seq != VS.NO_VICTIM:
                 vs = self.read_vital_signals()
                 self.victims[vs[0]] = ((self.x, self.y), vs)
+                if self.get_rtime() < 3779:
+                    print('kkk')
                 print(f"{self.NAME} Victim found at ({self.x}, {self.y}), rtime: {self.get_rtime()}")
                 #print(f"{self.NAME} Seq: {seq} Vital signals: {vs}")
             
@@ -334,9 +336,8 @@ class Explorer(AbstAgent):
         time_tolerance = 2* self.COST_DIAG * Explorer.MAX_DIFFICULTY + self.COST_READ
 
         # keeps exploring while there is enough time
-        if  self.walk_time < (self.get_rtime() - time_tolerance):
+        if self.walk_time < (self.get_rtime() - time_tolerance):
             self.explore()
-            return True
 
         # no more come back walk actions to execute or already at base
         if self.walk_stack.is_empty() or (self.x == 0 and self.y == 0):
@@ -344,10 +345,12 @@ class Explorer(AbstAgent):
             self.resc.sync_explorers(self.map, self.victims)
             # finishes the execution of this agent
             return False
-        
-        # proceed to the base
-        self.come_back_with_astar()
-        return True
+        else:
+            if self.get_rtime() <= self.TLIM / 2:
+                # proceed to the base
+                self.come_back_with_astar()
+                return True
+            return True
         
 # **************
 #  A-star
@@ -387,6 +390,7 @@ class Explorer(AbstAgent):
         return adjacency_matrix
 
     def come_back_with_astar(self):
+        self.walk_stack.pop()
         # monta grafo com as posicoes exploradas (o mapa) usando matriz de adjacencias
         adjacency_matrix = self.build_adjacency_matrix()
 
