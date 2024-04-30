@@ -1,7 +1,10 @@
-## Reads the file env_obst.txt composed of three columns separated by commas:
-## x, y, difficulty
-## The program  keep only one row per x and y values containing
-## the greater value of difficulty of access.
+## Reads the file env_obst.txt composed of three columns separated by commas: <x, y, difficulty>
+## This programs keeps only one row considering the x and y values. 
+## If there are more than one row with same values for (x, y), the row with
+## the greater value of difficulty of access remains. The others are discarded.
+##
+## input: env_obst.txt
+## output: filtered_env_obst.txt
 
 def read_file(filename):
     data = []
@@ -15,13 +18,12 @@ def filter_data(data):
     filtered_data = {}
     removed_rows = []
     for x, y, diff in data:
-        diff_rounded = round(diff / 0.25) * 0.25  # Round diff to multiples of 0.25
-        if (x, y) not in filtered_data or diff_rounded > filtered_data[(x, y)][2]:
+        if (x, y) not in filtered_data or diff > filtered_data[(x, y)][2]:
             if (x, y) in filtered_data:
                 removed_rows.append(filtered_data[(x, y)])
-            filtered_data[(x, y)] = (x, y, diff_rounded)
+            filtered_data[(x, y)] = (x, y, diff)
         else:
-            removed_rows.append((x, y, diff_rounded))
+            removed_rows.append((x, y, diff))
     return sorted(list(filtered_data.values()), key=lambda x: (x[0], x[1], x[2])), removed_rows
 
 def write_file(filename, data):
