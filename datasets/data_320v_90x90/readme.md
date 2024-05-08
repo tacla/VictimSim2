@@ -4,5 +4,5 @@ Nesta pasta, os seguintes arquivos estão disponíveis:
 - 'input.txt': arquivo de entrada para os classificadores
 - 'target.txt': arquivo de referência para medir a acurácia dos classificadores
 
-# Datasets de Treino, validação da tarefa 2 - 2024
+# Datasets de Treino, validação da tarefa 3 - 2024
 - 'rescue_prior.txt': contém 1280 linhas
