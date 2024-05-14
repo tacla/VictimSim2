@@ -4,11 +4,4 @@ Nesta pasta, os seguintes arquivos estão disponíveis:
 - **input.txt**: arquivo de entrada para os classificadores com a última coluna fixa em 1 (label de gravidade)
 - **target.txt**: arquivo de referência para medir a acurácia dos classificadores
 
-# Datasets de Treino, validação da Tarefa 3 - 2024
-- **rescue_prior.txt**: contém 1280 linhas para treinamento de um regressor que estima a prioridade de salvamento de uma vítima dadas as características:
-  - dificuldade de acesso à vítima (soma das dificuldades das células no entorno da vítima + própria célula),
-  - nível de gravidade e
-  - distância Euclidiana da vítima à base
-  - prioridade de salvamento de 0 a 100 (target)
-- **rescue_prior_preblind.txt**: contém 300 linhas para pré-teste cego de um regressor; a estrutura é idêntica ao do rescue_prior.txt, exceto pelo fato de não ter a última coluna que deve ser estimada pelo regressor.
-- **rescue_prior_preblind_target.txt**: contém 300 linhas para pré-teste cego de um regressor com a coluna target
+
