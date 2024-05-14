@@ -9,5 +9,6 @@ Nesta pasta, os seguintes arquivos estão disponíveis:
   - dificuldade de acesso à vítima (soma das dificuldades das células no entorno da vítima + própria célula),
   - nível de gravidade e
   - distância Euclidiana da vítima à base
+  - prioridade de salvamento de 0 a 100 (target)
 - **rescue_prior_preblind.txt**: contém 300 linhas para pré-teste cego de um regressor; a estrutura é idêntica ao do rescue_prior.txt, exceto pelo fato de não ter a última coluna que deve ser estimada pelo regressor.
 - **rescue_prior_preblind_target.txt**: contém 300 linhas para pré-teste cego de um regressor com a coluna target
