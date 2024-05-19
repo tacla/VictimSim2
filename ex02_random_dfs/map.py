@@ -72,7 +72,10 @@ class Map:
     def get_difficulty(self, coord):
         """ get only the difficulty value associated to a coord key: a triple (diff, vic_id, [actions' results])
             @param coord: a pair (x, y), the key of the dictionary"""
-        return self.map_data.get(coord)[0]
+        if self.in_map(coord):
+            return self.map_data.get(coord)[0]
+        else:
+            return 100
 
     def get_vic_id(self, coord):
         """ get only the victim id number associated to a coord key: a triple (diff, vic_id, [actions' results])

@@ -10,8 +10,8 @@ from rescuer import Rescuer
 def main(data_folder_name):
 
     # Set the path to config files and data files for the environment
-    # config_ag_folder = os.path.join("ex02_random_dfs", "cfg_1")
-    config_ag_folder = 'cfg_1'
+    config_ag_folder = os.path.join("ex02_random_dfs", "cfg_1")
+    #config_ag_folder = 'cfg_1'
     current_folder = os.path.abspath(os.getcwd())
     data_folder = os.path.abspath(
         os.path.join(current_folder, data_folder_name))

@@ -3,7 +3,7 @@ from joblib import load
 import os
 import pickle
 
-class Classifier():
+class Regressor():
     def __init__(self,total_victims):
         self.total_victims = total_victims
         self.ids = []
@@ -27,9 +27,10 @@ class Classifier():
         return self.ids
     
     def make_prediction(self):
-        tree_model = pickle.load(open(f"{os.getcwd()}/ex02_random_dfs/model.pkl", "rb"))
+        #tree_model = load(os.getcwd() + '\\ex02_random_dfs\\decision_tree_model.joblib')
+        rn_model = pickle.load(open(f"{os.getcwd()}/ex02_random_dfs/model.pkl", "rb"))
         X = self.df_victims
-        y_pred = tree_model.predict(X)
+        y_pred = rn_model.predict(X)   
         i = 0
         for id in self.ids:
             v = self.total_victims[id]

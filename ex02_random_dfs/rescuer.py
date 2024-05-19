@@ -21,6 +21,8 @@ from astar_algorithm import AStarExplorer
 import csv
 import sys
 from classifier import Classifier
+from regressor import Regressor
+from fitnessRN import fitnessRN
 from cluster import Cluster
 from bfs import BFS
 
@@ -224,15 +226,67 @@ class Rescuer(AbstAgent):
 
         # O score deve ser maior quanto maior a gravidade ponderada, e menor a distancia que precisa ser percorrida
         return soma_gravidade_ponderada + (1/distancia_total)
+    
+    def aptidao_rn(self, permutacao):
+        prioridades = {}
+
+        for idx in range(len(permutacao)):
+            id_vitima = permutacao[idx][0]
+            x2 = permutacao[idx][2]
+
+            pos_vitima = permutacao[idx][1]  #posicao da vitima
+            x3 = self.tempo_deslocamento((0,0),pos_vitima)
+            
+            x1 = self.dificuldade(pos_vitima)
+
+            x4 = self.aptidao(permutacao)
+
+            x = [x1,x2,x3,x4]
+            fitness = fitnessRN(x)
+            prioridades[id_vitima] = fitness.make_prediction()
+
+        # Ordenar os itens do dicionário original com base nos valores
+        sorted_items = sorted(prioridades.items(), key=lambda item: item[1],reverse=True)
+
+        # Criar um novo dicionário com valores a partir de 0
+        ordem_salvamento_prioridades = {item[0]: index for index, item in enumerate(sorted_items)}
+        error = 0
+        for idx in permutacao:
+            id_vitima = idx[0]
+            for ix in permutacao:
+                if ix[0] == id_vitima:
+                        ordem_permutacao = permutacao.index(ix)
+                        break
+            ordem_prioridade = ordem_salvamento_prioridades[id_vitima]
+            error += abs(ordem_permutacao - ordem_prioridade)
+
+        score = 0
+        if error == 0:
+            score = 100
+        else:
+            score = 1/error
+        return score
+             
+    def dificuldade(self, pos):
+        dificuldade = 0
+        self.incr = {              # the increments for each walk action
+            0: (0, -1),             #  u: Up
+            1: (1, -1),             # ur: Upper right diagonal
+            2: (1, 0),              #  r: Right
+            3: (1, 1),              # dr: Down right diagonal
+            4: (0, 1),              #  d: Down
+            5: (-1, 1),             # dl: Down left left diagonal
+            6: (-1, 0),             #  l: Left
+            7: (-1, -1)             # ul: Up left diagonal
+        }
+
+        for direcao in self.incr.values():
+            walk = (0,0)
+            walk = (pos[0] + direcao[0],pos[1] + direcao[1])
+            dificuldade += self.map.get_difficulty(walk)
+        return dificuldade
 
     # Considera só a gravidade e nao as distancias
-
-    def aptidao_v2(self, permutacao):
-        gravidade_ponderada = self.calcular_gravidades_ponderadas(permutacao)
-        soma_gravidade_ponderada = sum(gravidade_ponderada)
-
-        # O score deve ser maior quanto maior a gravidade ponderada
-        return soma_gravidade_ponderada
 
     # Mutação:
     # Aplica operadores de mutação para introduzir diversidade na população. Faz isso trocando duas posicoes de uma rota
@@ -289,7 +343,7 @@ class Rescuer(AbstAgent):
             # Passo 1: Populacao inicial
             lista_1, lista_2, lista_3, lista_4 = self.populacao_inicial(
                 melhor_lista)
-        elif iteracoes_geneticas >= 20:
+        elif iteracoes_geneticas >= 2:
             # TODO: Colocar numero do criterio de parada numa variavel separada
             # Passo final: criterio de parada
             return melhor_lista
@@ -317,7 +371,7 @@ class Rescuer(AbstAgent):
             print("Lista: {}".format(permutation))
 
             # Passo 3: Usar a funcao de aptidao para cumprir o passo 2
-            pontuacao_rota_atual = self.aptidao(permutation)
+            pontuacao_rota_atual = self.aptidao_rn(permutation)
             print("Pontuacao:", pontuacao_rota_atual)
             if pontuacao_rota_atual > melhor_pontuacao:
                 melhor_pontuacao = pontuacao_rota_atual
@@ -380,23 +434,24 @@ class Rescuer(AbstAgent):
         #victims_info_array = [[1, (4, 2), 0], [2, (0, 0), 1], [3, (1, 5), 2],  [
            #4, (3, 3), 3], [5, (4, 2), 3], [6, (4, 2), 2], [7, (4, 2), 1]]
         
-        if i > 1:
-            victims_info_array = self.clusters
-        else:
-            victims_info_array = self.clusters[i]
-
-        self.sequences = self.sequencia(victims_info_array, [], [], [], 0)
+        #if i > 1:
+         #   victims_info_array = self.clusters
+        #else:
+        victims_info_array = self.clusters[i]
+        my_sequences = self.sequencia(victims_info_array, [], [], [], 0)
+        self.sequences = dict(my_sequences)
         #self.sequences = self.sequencia(self.victims_to_be_saved, [], [], [], 0)
         print("🤖 Fim do sequenciamento, rota de salvamento:")
         print(self.sequences)
         print()
         # Salva a sequencia de salvamento desse agente num .txt
-        self.save_sequence_csv(i, self.sequences)
+        self.save_sequence_csv(i, my_sequences)
 
     def planner(self):
         """ A method that calculates the path between victims: walk actions in a OFF-LINE MANNER (the agent plans, stores the plan, and
             after it executes. Eeach element of the plan is a pair dx, dy that defines the increments for the the x-axis and  y-axis."""
-        
+
+
         # let's instantiate the breadth-first search
         bfs = BFS(self.map, self.COST_LINE, self.COST_DIAG)
 
@@ -409,17 +464,11 @@ class Rescuer(AbstAgent):
         # we consider only the first sequence (the simpler case)
         # The victims are sorted by x followed by y positions: [vic_id]: ((x,y), [<vs>]
 
-        sequence = self.sequences
+        sequence = self.sequences[0]
         start = (0,0) # always from starting at the base
-        i = 0
         for vic_id in sequence:
-            goal = vic_id[1]
+            goal = sequence[vic_id][0]
             plan, time = bfs.search(start, goal, self.plan_rtime)
-            if plan == None:
-                # if i == 0:
-                #     sequence.append(vic_id)
-                #     i += 1
-                continue
             self.plan = self.plan + plan
             self.plan_rtime = self.plan_rtime - time
             start = goal
@@ -469,25 +518,24 @@ class Rescuer(AbstAgent):
             # Assign the cluster the master agent is in charge of 
             self.clusters = victim_clusters  # the first one
 
-            # Instantiate the other rescuers and assign the clusters to them
-            # for i in range(1, 4):    
-            #     #print(f"{self.NAME} instantianting rescuer {i+1}, {self.get_env()}")
-            #     filename = f"rescuer_{i+1:1d}_config.txt"
-            #     config_file = os.path.join(self.config_folder, filename)
-            #     # each rescuer receives one cluster of victims
-            #     rescuers[i] = Rescuer(self.env, config_file, self.config_folder, 1, self.clusters[i+1]) 
-            #     rescuers[i].map = self.map     # each rescuer have the map
+            #Instantiate the other rescuers and assign the clusters to them
+            for i in range(1, 3):    
+                #print(f"{self.NAME} instantianting rescuer {i+1}, {self.get_env()}")
+                filename = f"rescuer_{i+1:1d}_config.txt"
+                config_file = os.path.join(self.config_folder, filename)
+                # each rescuer receives one cluster of victims
+                rescuers[i] = Rescuer(self.env, config_file, self.config_folder, 1, self.clusters[i+1]) 
+                rescuers[i].map = self.map     # each rescuer have the map
                 
             # Calculate the sequence of rescue for each agent
             # In this case, each agent has just one cluster and one sequence
             self.sequences = self.clusters         
 
             # For each rescuer, we calculate the rescue sequence 
-            #for i, rescuer in enumerate(rescuers):
-
-            self.sequencing(1)         # the sequencing will reorder the cluster            
-            self.planner()            # make the plan for the trajectory
-            self.set_state(VS.ACTIVE) # from now, the simulator calls the deliberation method 
+            for i, rescuer in enumerate(rescuers):
+                self.sequencing(i+1)         # the sequencing will reorder the cluster            
+                self.planner()            # make the plan for the trajectory
+                self.set_state(VS.ACTIVE) # from now, the simulator calls the deliberation method 
     
     def __depth_search(self, actions_res):
         enough_time = True
