@@ -7,6 +7,9 @@
 ## Each cluster file has no header and the format for each line is as follows:
 ## victim id (int), column or x (int), row or y (int), severity (float), sev. label (int)
 ##
+## The sequence of visit file has the same format as the cluster file. But, the lines' order give
+## the sequence of visit.
+##
 ## The 2D grid's origin is at the top left corner. Indexation is (column, row).
 ##
 ## This program prints the metrics per quadrant (victims and walls per quadrant)
@@ -15,30 +18,32 @@
 ##    lower left | lower right
 ##
 ## Besides, it draws a rectangle around each cluster and the sequence of rescuing as lines
-## between the victims according to the order they appear in the cluster file.
+## between the victims according to the order they appear in the sequence of visit file.
 ## Stats on victims per cluster are printed according to the values found in each cluster file.
+## The severity class is the original one (coming from env_vital_signals.txt).
 ##
 ## To run this program you have to:
 ## - set the variables of the section Input files and folder
-## - set the flag REL_COORDINATES to True or False (when false, the program adds the base coordinantes 
-##    to the coordinates of the cluster and seq files
+## - set the flag ABS_COORDINATES to True or False (when false, the program adds the base coods
+##   defined in the env_config.txt to the coordinates of the cluster and seq files
 
 import pygame
 import os
 import random
 import math
 import csv
+import sys
 
 # Coordinates of cluster and sequence files are absolute to the base position?
-ABS_COORDINATES = True
+ABS_COORDINATES = False
 
 # Input files and folders
-data_folder = "./datasets/data_10v_12X12"
-env_file = "env_config.txt"
-obst_file = "env_obst.txt"
-victims_file = "env_victims.txt"
-vital_signals_file = "env_vital_signals.txt"
-cluster_folder = "./clusters"                     # Directory containing cluster and seq files 
+data_folder = "./datasets/data_300v_90x90"
+env_file = "env_config.txt"                       # the program concatenates data_folder + env_file
+obst_file = "env_obst.txt"                        # the program concatenates data_folder + obst_file                      
+victims_file = "env_victims.txt"                  # the program concatenates data_folder + victims_file   
+vital_signals_file = "env_vital_signals.txt"      # the program concatenates data_folder + vsignal_file
+cluster_folder = "./clusters"                     # Directory containing cluster and sequence of visit files 
 
 # Define colors
 WHITE = (255, 255, 255)
@@ -58,9 +63,12 @@ VIC_COLOR_LIST = [VIC_COLOR_SEV1, VIC_COLOR_SEV2, VIC_COLOR_SEV3, VIC_COLOR_SEV4
 def distance(p1, p2):
     return math.sqrt((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2)
 
-# Function to generate random colors
+# Function to generate random colors for embracing the clusters
 def generate_random_color():
-    return random.randint(50, 205), random.randint(50, 205), random.randint(50, 205)
+    r = random.randint(100,255)
+    g = 0
+    b = random.randint(0, 150)
+    return r, g, b
 
 # Open config file
 env_dic = {}
@@ -160,9 +168,11 @@ screen.fill(WHITE)
 # Draw grid cells as unfilled black rectangles
 for r in range(R):
     for c in range(C):
-        pygame.draw.rect(screen, GRAY, (c * CELLW, r * CELLH, CELLW, CELLH), 1)
+        pygame.draw.rect(screen, (230,230,230), (c * CELLW, r * CELLH, CELLW, CELLH), 1)
 
 print(f"Stats printed by plot_clusters_and_seq.py\n")
+print(f"Colors of the victims follow the original env_vital_signals.txt and not the predicted value")
+print(f"Stats follow the predicted values and may differ from the colors")
 print(f"\n----------------------------------------")
 print(f"Total of rows......: {R}")
 print(f"Total of cols......: {C}")
@@ -203,7 +213,7 @@ with open(os.path.join(data_folder, victims_file), 'r') as csvfile:
 tot_vics = len(vict_coords)
 
 vic_severity = []
-# Read the victims' vital signals
+# Read the victims' vital signals - the real one
 with open(os.path.join(data_folder, vital_signals_file), 'r') as csvfile:
     csvreader = csv.reader(csvfile)
     for row in csvreader:
@@ -229,11 +239,16 @@ for c, r in wall_coords:
 
 print(f"\n----------------------------------------")
 # Plot clusters
+gen_min_c = sys.maxsize
+gen_min_r = sys.maxsize
+gen_max_c = -sys.maxsize - 1
+gen_max_r = -sys.maxsize - 1
+
 for file_name, cluster in cluster_data.items():
-    min_c = 100000
-    min_r = 100000
-    max_c = -1
-    max_r = -1
+    min_c = sys.maxsize
+    min_r = sys.maxsize
+    max_c = -sys.maxsize - 1
+    max_r = -sys.maxsize - 1
     tot_vic = 0
     vics_sev=[0]*4  # victims per severity 
     
@@ -254,16 +269,34 @@ for file_name, cluster in cluster_data.items():
             max_r = r
 
         vics_sev[l-1] = vics_sev[l-1]+1
-        
-        
 
+    if min_c < gen_min_c:
+        gen_min_c = min_c
+        
+    if min_r < gen_min_r:
+        gen_min_r = min_r
+        
+    if max_c > gen_max_c:
+        gen_max_c = max_c
+        
+    if max_r > gen_max_r:
+        gen_max_r = max_r
+        
+        
+    pygame.draw.rect(screen, cluster_color, (min_c * CELLW, min_r * CELLH, (max_c - min_c + 1) * CELLW, (max_r - min_r + 1) * CELLH), 5)
     print(f"Cluster: {file_name} {tot_vic} victims, being...")
     print(f"   {vics_sev[0]} critical,")
     print(f"   {vics_sev[1]} instable,")
     print(f"   {vics_sev[2]} pot inst., and")
     print(f"   {vics_sev[3]} stable.\n")
-    pygame.draw.rect(screen, cluster_color, (min_c * CELLW, min_r * CELLH, (max_c - min_c + 1) * CELLW, (max_r - min_r + 1) * CELLH), 5)
 
+print(f"{gen_min_c}, {gen_min_r} : {gen_max_c}, {gen_max_r}")
+mid_c = gen_min_c + (gen_max_c - gen_min_c)/2
+print(f"mid col {mid_c} = {mid_c * CELLW}")
+mid_r = gen_min_r + (gen_max_r - gen_min_r)/2
+pygame.draw.line(screen, (255,0,0), (mid_c * CELLW, gen_min_r * CELLH), (mid_c * CELLW, gen_max_r * CELLH), 2)
+pygame.draw.line(screen, (255,0,0), (gen_min_c * CELLW, mid_r * CELLH), (gen_max_c * CELLW, mid_r * CELLH), 2)
+pygame.draw.rect(screen, (255,0,0), (gen_min_c * CELLW, gen_min_r * CELLH, (gen_max_c - gen_min_c + 1) * CELLW, (gen_max_r - gen_min_r + 1) * CELLH), 2)
 
 
 print(f"\n----------------------------------------")
@@ -275,7 +308,7 @@ print(f"  lower right quad.: {walls_quad[3]} ({100*walls_quad[3]/tot_walls:.1f}%
 
 
 
-# Plot victims as red circles
+# Plot victims as circles
 v = 0
 for c, r in vict_coords:
     color = VIC_COLOR_LIST[vic_severity[v] - 1]

@@ -117,19 +117,19 @@ class PhysAgent:
 
 
     def _check_for_victim(self):
-        """ Public method for testing if there is a victim at the current position of the agent
-        @returns: the sequential number of the victim - an integer starting from zero that corresponds to the position of
+        """ Protected method for testing if there is a victim at the current position of the agent
+        @returns: the id number of the victim - an integer starting from zero that corresponds to the position of
         the victim in the data files victims.txt and vital_signals.txt or VS.NO_VICTIMif there is no victim at the current position of the agent"""
 
-        seq = VS.NO_VICTIM
+        vic_id = VS.NO_VICTIM
 
         if (self.x, self.y) in self.env.victims:
-            seq = self.env.victims.index((self.x, self.y))
+            vic_id = self.env.victims.index((self.x, self.y))
 
-        return seq
+        return vic_id
 
     def _read_vital_signals(self):
-        """ Public method for reading the vital signals and marking a victim as found. The agent can only
+        """ Protected method for reading the vital signals and marking a victim as found. The agent can only
         successfully execute this method if it is in the same position of the victim.
         Every tentative of reading the vital signal out of position consumes time.
         @returns:
@@ -145,17 +145,17 @@ class PhysAgent:
            return VS.TIME_EXCEEDED
 
         ## victim
-        seq = self._check_for_victim()
-        if seq == VS.NO_VICTIM:
+        vic_id = self._check_for_victim()
+        if vic_id == VS.NO_VICTIM:
             return []
         
         # Mark the victim as found by this agent.
         # More than one agent can found the same victim, so it's a list
-        self.env.found[seq].append(self)
-        return self.env.signals[seq][:-2] # remove the last two elements: label and value of severity
+        self.env.found[vic_id].append(self)
+        return self.env.signals[vic_id][:-2] # remove the last two elements: label and value of severity
 
     def _first_aid(self):
-        """ Public method for dropping the first aid package to the victim located at the same position of the agent.
+        """ Protected method for dropping the first aid package to the victim located at the same position of the agent.
         This method marks the victim as saved.
         @returns:
         - VS.TIME_EXCEEDED when the agent has no enough battery time to execute the operation
@@ -170,18 +170,18 @@ class PhysAgent:
            return VS.TIME_EXCEEDED
 
         ## victim
-        seq = self._check_for_victim()
-        if seq == VS.NO_VICTIM:
+        vic_id = self._check_for_victim()
+        if vic_id == VS.NO_VICTIM:
             return False
         
         # Mark the victim as found by this agent.
         # More than one agent can drop a first-aid package to the same victim, so it's a list
-        self.env.saved[seq].append(self)
+        self.env.saved[vic_id].append(self)
         return True
 
     def _get_found_victims(self):
-        """ Public method for returning the number of found victims by the agent
-        @returns a list with the sequential number of found victims """
+        """ Protected method for returning the number of found victims by the agent
+        @returns a list with the id number of the found victims """
 
         victims = []
 
@@ -194,8 +194,8 @@ class PhysAgent:
         return victims
 
     def _get_saved_victims(self):
-        """ Public method for returning the number of saved victims by the agent
-        @returns a list with the sequential number of saved victims """
+        """ Protected method for returning the number of saved victims by the agent
+        @returns a list with the id number of the saved victims """
 
         victims = []
 

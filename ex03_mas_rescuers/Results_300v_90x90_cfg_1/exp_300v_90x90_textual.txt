@@ -1,0 +1,41 @@
+Descriptor
+   V1   V2  V3  V4        SG
+0  78  159  38  25  11252.89
+
+Data
+   Ve1  Ve2  Ve3  Ve4       Veg  Vs1  Vs2  Vs3  Vs4       Vsg
+0   18   31   11    6  0.218929   18   31   11    6  0.218929
+1   14   22   10    6  0.168260   14   22   10    6  0.168260
+2   19   35   10    5  0.233270   19   35   10    5  0.233270
+3   21   38   14    7  0.262906   21   38   14    7  0.262906
+4   21   39    8    8  0.255258   21   39    8    8  0.255258
+Runs: 5
+Max mean value: 33
+
+Found victims (mean abs value)
+Ve1    18.6
+Ve2    33.0
+Ve3    10.6
+Ve4     6.4
+
+Found victims (mean value over the total of victims)
+Ve1: 0.2385%
+Ve2: 0.2075%
+Ve3: 0.2789%
+Ve4: 0.2560%
+
+Saved victims (mean abs value)
+Vs1    18.6
+Vs2    33.0
+Vs3    10.6
+Vs4     6.4
+
+Saved victims (mean value over the total of victims)
+Vs1: 0.2385%
+Vs2: 0.2075%
+Vs3: 0.2789%
+Vs4: 0.2560%
+
+Veg and Vsg
+Veg: 0.228
+Vsg: 0.228

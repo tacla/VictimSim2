@@ -30,8 +30,8 @@ class Env:
                                # explorer agent cannot access this attribute, it has to find!
         self.nb_of_victims = 0 # total number of victims
         self.victims = []      # positional: the coordinates of the victims [(x1,y1), ..., (xn, yn)]
-        self.severity = []     # positional: the injury severity for each victim (label)
-        self.gravity = []      # positional: the injury gravity for each victim (float value)
+        self.sev_label = []    # positional: the injury severity for each victim (label)
+        self.sev_value = []      # positional: the injury gravity for each victim (float value)
         self.sum_gravity = 0   # sum of all gravity values for peg and psg calculation
         self.signals = []      # positional: the vital signals of the victims [[i,s1,...,s5,g,l],...]
         self.found   = [[]]    # positional: Physical agents that found each victim [[ag1] [ag2, ag3], ...] ag1 found vict 0, ag2 and 3, vict 1, ... 
@@ -90,7 +90,7 @@ class Env:
         with open(vs_file, 'r') as csvfile:
             csvreader = csv.reader(csvfile)
             for row in csvreader:
-                seq = int(row[0])  # seq number
+                vid = int(row[0])# victim id number
                 sp = float(row[1]) # sistolic pression
                 dp = float(row[2]) # diastolic pression
                 qp = float(row[3]) # quality of pression
@@ -99,9 +99,9 @@ class Env:
                 gr = float(row[Env.IDX_GRAVITY]) # injury severity value
                 lb = int(row[Env.IDX_SEVERITY])  # label of the injury severity
                 
-                self.signals.append([seq, sp, dp, qp, pf, rf, gr, lb])
-                self.severity.append(lb)
-                self.gravity.append(gr)
+                self.signals.append([vid, sp, dp, qp, pf, rf, gr, lb])
+                self.sev_label.append(lb)
+                self.sev_value.append(gr)
                 self.sum_gravity = self.sum_gravity + gr
 
         if self.nb_of_victims > len(self.signals):
@@ -117,7 +117,7 @@ class Env:
         self.found = [[] for v in range(self.nb_of_victims)]
         self.saved = [[] for v in range(self.nb_of_victims)]
                 
-        # Set up with the trace color of the last physical agent who visited the cell
+        # Stores all the agents have been in the cell
         self.visited = [[[] for y in range(self.dic["GRID_HEIGHT"])] for x in range(self.dic["GRID_WIDTH"])]
         
 
@@ -232,7 +232,7 @@ class Env:
         v=0
         for victim in self.victims:
             victim_rect = pygame.Rect(victim[0] * cell_w + 1, victim[1] * cell_h + 1, cell_w - 1, cell_h - 1)
-            c = self.severity[v]-1
+            c = self.sev_label[v]-1
             pygame.draw.ellipse(self.screen, VS.VIC_COLOR_LIST[c], victim_rect)
             if self.saved[v] != []:
                 pygame.draw.ellipse(self.screen, VS.WHITE, victim_rect, 3)
@@ -351,41 +351,41 @@ class Env:
         idents = ' ' * ident
 
         if len(victims) > 0:
-            sev = []
-            grav = []
-            tot_grav = 0        # for peg or psg calculation
+            sev_label = []
+            sev_value = []
+            tot_sev = 0        # for peg or psg calculation
             for v in victims:
-                sev.append(self.severity[v])
-                grav.append(self.gravity[v])
-                tot_grav = tot_grav + self.gravity[v]
+                sev_label.append(self.sev_label[v])
+                sev_value.append(self.sev_value[v])
+                tot_sev = tot_sev + self.sev_value[v]
 
-            print(f"\n{idents}{type_str} victims: (id, severity, gravity)")
+            print(f"\n{idents}{type_str} victims: (ID, Sev label, Sev value)")
             for i in range(len(victims)):
-                print(f"{idents}({victims[i]:d}, {sev[i]:d}, {grav[i]:.1f})", end=' ')
+                print(f"{idents}({victims[i]:d}, {sev_label[i]:d}, {sev_value[i]:.1f})", end=' ')
 
             print("\n")
-            if self.severity.count(1) > 0:
-                print(f"{idents}Critical victims {type_str}     (V{sub}1) = {sev.count(1):3d} out of {self.severity.count(1)} ({100*sev.count(1)/self.severity.count(1):.1f})%")
-            if self.severity.count(2) > 0:
-                print(f"{idents}Instable victims {type_str}     (V{sub}2) = {sev.count(2):3d} out of {self.severity.count(2)} ({100*sev.count(2)/self.severity.count(2):.1f})%")
-            if self.severity.count(3) > 0:
-                print(f"{idents}Pot. inst. victims {type_str}   (V{sub}3) = {sev.count(3):3d} out of {self.severity.count(3)} ({100*sev.count(3)/self.severity.count(3):.1f})%")
-            if self.severity.count(4) > 0:
-                print(f"{idents}Stable victims {type_str}       (V{sub}4) = {sev.count(4):3d} out of {self.severity.count(4)} ({100*sev.count(4)/self.severity.count(4):.1f})%")
+            if self.sev_label.count(1) > 0:
+                print(f"{idents}Critical victims {type_str}     (V{sub}1) = {sev_label.count(1):3d} out of {self.sev_label.count(1)} ({100*sev_label.count(1)/self.sev_label.count(1):.1f})%")
+            if self.sev_label.count(2) > 0:
+                print(f"{idents}Instable victims {type_str}     (V{sub}2) = {sev_label.count(2):3d} out of {self.sev_label.count(2)} ({100*sev_label.count(2)/self.sev_label.count(2):.1f})%")
+            if self.sev_label.count(3) > 0:
+                print(f"{idents}Pot. inst. victims {type_str}   (V{sub}3) = {sev_label.count(3):3d} out of {self.sev_label.count(3)} ({100*sev_label.count(3)/self.sev_label.count(3):.1f})%")
+            if self.sev_label.count(4) > 0:
+                print(f"{idents}Stable victims {type_str}       (V{sub}4) = {sev_label.count(4):3d} out of {self.sev_label.count(4)} ({100*sev_label.count(4)/self.sev_label.count(4):.1f})%")
             print(f"{idents}--------------------------------------")
-            print(f"{idents}Total of {type_str} victims     (V{sub})  = {len(sev):3d} ({100*float(len(sev)/self.nb_of_victims):.2f}%)")
+            print(f"{idents}Total of {type_str} victims     (V{sub})  = {len(sev_label):3d} ({100*float(len(sev_label)/self.nb_of_victims):.2f}%)")
 
-            weighted = ((6*sev.count(1) + 3*sev.count(2) + 2*sev.count(3) + sev.count(4))/
-            (6*self.severity.count(1)+3*self.severity.count(2)+2*self.severity.count(3)+self.severity.count(4)))
+            weighted = ((6*sev_label.count(1) + 3*sev_label.count(2) + 2*sev_label.count(3) + sev_label.count(4))/
+            (6*self.sev_label.count(1)+3*self.sev_label.count(2)+2*self.sev_label.count(3)+self.sev_label.count(4)))
 
             print(f"{idents}Weighted {type_str} victims per severity (V{sub}g) = {weighted:.2f}\n")
             
-            print(f"{idents}Sum of gravities of all {type_str} victims = {tot_grav:.2f} of a total of {self.sum_gravity:.2f}")
-            print(f"{idents}  % of gravities of all {type_str} victims = {tot_grav/self.sum_gravity:.2f}")
+            print(f"{idents}Sum of gravities of all {type_str} victims = {tot_sev:.2f} of a total of {self.sum_gravity:.2f}")
+            print(f"{idents}  % of gravities of all {type_str} victims = {tot_sev/self.sum_gravity:.2f}")
             print(f"{idents}--------------------------------------")
             print(f"{idents}CSV of {type_str} victims")
             print(f"{idents}V{sub}1,V{sub}2,V{sub}3,V{sub}4,V{sub}g")
-            print(f"{idents}{sev.count(1)},{sev.count(2)},{sev.count(3)},{sev.count(4)},{weighted}")
+            print(f"{idents}{sev_label.count(1)},{sev_label.count(2)},{sev_label.count(3)},{sev_label.count(4)},{weighted}")
         else:
             print(f"{idents}No {type_str} victims")
             print(f"{idents}--------------------------------------")
@@ -424,17 +424,17 @@ class Env:
 
         print("\n\n*** ACUMULATED RESULTS - FOR ALL AGENTS ***\n")
         print(f" *** Numbers of Victims in the Environment ***")
-        print(f"   Critical victims    (V1) = {self.severity.count(1):3d}")
-        print(f"   Instable victims    (V2) = {self.severity.count(2):3d}")
-        print(f"   Pot. inst. victims  (V3) = {self.severity.count(3):3d}")
-        print(f"   Stable victims      (V4) = {self.severity.count(4):3d}")
+        print(f"   Critical victims    (V1) = {self.sev_label.count(1):3d}")
+        print(f"   Instable victims    (V2) = {self.sev_label.count(2):3d}")
+        print(f"   Pot. inst. victims  (V3) = {self.sev_label.count(3):3d}")
+        print(f"   Stable victims      (V4) = {self.sev_label.count(4):3d}")
         print(f"   --------------------------------------")
         print(f"   Total of victims    (V)  = {self.nb_of_victims:3d}")
         print(f"   Sum of all gravities(SG) = {self.sum_gravity:.2f}")
         print(f"   --------------------------------------")
         print(f"   CSV of nb. total of victims")
         print(f"   V1,V2,V3,V4,SG")
-        print(f"   {self.severity.count(1)},{self.severity.count(2)},{self.severity.count(3)},{self.severity.count(4)},{self.sum_gravity}")
+        print(f"   {self.sev_label.count(1)},{self.sev_label.count(2)},{self.sev_label.count(3)},{self.sev_label.count(4)},{self.sum_gravity}")
 
         found = []
         for index, agents in enumerate(self.found, start=0):
