@@ -69,5 +69,5 @@ start_point = (65, 22)
 end_point = (65, 21)
 
 distance, path = shortest_path(matrix, start_point, end_point)
-print(f"Shortest distance from {start_point} to {end_point} is {distance}")
-print("Path:", path)
+# print(f"Shortest distance from {start_point} to {end_point} is {distance}")
+# print("Path:", path)
