@@ -1,7 +1,6 @@
 import csv
 import random
 from datetime import datetime
-from functools import lru_cache
 
 from read_map import read_matrix, shortest_path
 
@@ -24,10 +23,13 @@ with open(f'cluster{CLUSTER}.csv', newline='') as csvfile:
         victim["feat"] = eval(f"{row[3:9]}".replace('"', "").replace("'",""))[0]
         victims[victim["id"]] = victim
 
-
-@lru_cache(maxsize=None)
+cache = {}
 def cached_shortest_path(start, end):
-    return shortest_path(matrix, start, end)
+    if (start, end) in cache:
+        return cache[(start, end)]
+    distance, _ = shortest_path(matrix, start, end)
+    cache[(start, end)] = distance
+    return distance
 
 
 def get_list_score(victims):
@@ -39,7 +41,7 @@ def get_list_score(victims):
 
     for victim in victims:
         c = victim["coords"]
-        distance, _ = cached_shortest_path(last_pos, c)
+        distance = cached_shortest_path(last_pos, c)
         last_pos = c
         # log(f"{last_pos} -> {c} = {distance}")
         path_cost += distance
@@ -53,7 +55,7 @@ def get_list_score(victims):
 
 
 def can_return(current_pos, current_time):
-    distance, _ = shortest_path(matrix, current_pos, BASE)
+    distance = cached_shortest_path(current_pos, BASE)
     return (current_time + distance) <= TIMELIMIT
 
 
