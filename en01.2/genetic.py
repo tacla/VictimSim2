@@ -91,6 +91,10 @@ def run_gen(gen, population = None):
 
     csv_population = []
     for p in population:
+        if len(set([victim['id'] for victim in p['victims']])) != len(p['victims']):
+            log(f"Duplicate victims in population {p['id']}")
+            raise Exception("Duplicate victims")
+
         csv_population.append({
             "id": p['id'],
             "score": p['score'],
@@ -114,7 +118,7 @@ def run_gen(gen, population = None):
         if random.random() > 0.9:
             selected.append(p)
 
-    log(f"Crossovering generation {gen}")
+    # log(f"Crossovering generation {gen}")
     crossovered = crossover_population(selected, len(population) - len(best_pop))
     crossovered.extend(best_pop)
 
@@ -130,7 +134,7 @@ def run_gen(gen, population = None):
         writer.writeheader()
         writer.writerows(csv_population)
 
-    log(f"Mutating generation {gen}")
+    # log(f"Mutating generation {gen}")
     mutated = mutate_population(crossovered)
 
     csv_population = []
@@ -148,7 +152,7 @@ def run_gen(gen, population = None):
     return mutated
 
 
-def mutate_population(population, mutation_rate=0.2):
+def mutate_population(population, mutation_rate=0.1):
     mutated_population = []
 
     for individual in population:
@@ -166,22 +170,37 @@ def mutate_population(population, mutation_rate=0.2):
     return mutated_population
 
 
+def order_crossover(parent1, parent2):
+    size = len(parent1['victims'])
+
+    start, end = sorted(random.sample(range(size), 2))
+
+    child1_victims = [None] * size
+    child2_victims = [None] * size
+
+    child1_victims[start:end] = parent1['victims'][start:end]
+    child2_victims[start:end] = parent2['victims'][start:end]
+
+    fill_positions = [i for i in range(size) if child1_victims[i] is None]
+    fill_values = [v for v in parent2['victims'] if v not in child1_victims]
+    for pos, val in zip(fill_positions, fill_values):
+        child1_victims[pos] = val
+
+    fill_positions = [i for i in range(size) if child2_victims[i] is None]
+    fill_values = [v for v in parent1['victims'] if v not in child2_victims]
+    for pos, val in zip(fill_positions, fill_values):
+        child2_victims[pos] = val
+
+    return {'id': random.randint(0, 1e6), 'victims': child1_victims}, \
+        {'id': random.randint(0, 1e6), 'victims': child2_victims}
+
 def crossover_population(population, total):
     offspring = []
 
     while len(offspring) < total:
         parent1, parent2 = random.sample(population, 2)
 
-        victims1 = parent1['victims']
-        victims2 = parent2['victims']
-
-        crossover_point = random.randint(1, len(victims1) - 1)
-
-        child1_victims = victims1[:crossover_point] + victims2[crossover_point:]
-        child2_victims = victims2[:crossover_point] + victims1[crossover_point:]
-
-        child1 = {'id': random.randint(0, 1e6), 'victims': child1_victims}
-        child2 = {'id': random.randint(0, 1e6), 'victims': child2_victims}
+        child1, child2 = order_crossover(parent1, parent2)
 
         offspring.append(child1)
         offspring.append(child2)
