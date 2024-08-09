@@ -8,8 +8,8 @@ victims = {}
 BASE = (65, 22)
 TIMELIMIT = 1000
 CLUSTER = 4
-POPULATION = 200
-GENERATIONS = 100
+POPULATION = 10_000
+GENERATIONS = 10_000
 matrix = read_matrix(90, 90, '../datasets/data_300v_90x90/env_obst.txt')
 
 with open(f'cluster{CLUSTER}.csv', newline='') as csvfile:
@@ -62,8 +62,6 @@ def can_return(current_pos, current_time):
 def run_population():
     population = []
     for i in range(POPULATION):
-        if i % 100 == 0:
-            log(f"\t{i} / {POPULATION}")
         shuffled_list = list(victims.keys())
         random.shuffle(shuffled_list)
         victims_list = [victims[x] for x in shuffled_list]
@@ -79,8 +77,6 @@ def run_population():
 
 def calculate_score(population):
     for i, p in enumerate(population):
-        if i % 100 == 0:
-            log(f"\t{i} / {len(population)}")
         p['score'] = get_list_score(p['victims'])
     population.sort(key=lambda x: x['score'])
 
@@ -103,10 +99,11 @@ def run_gen(gen, population = None):
             "victims": ' '.join([str(victim['id']) for victim in p['victims']])
         })
 
-    with open(f'cluster{CLUSTER}-population-gen{gen}.csv', mode='w', newline='') as file:
-        writer = csv.DictWriter(file, fieldnames=["id", "score", "victims"])
-        writer.writeheader()
-        writer.writerows(csv_population)
+    if gen % 100 == 0:
+        with open(f'./cluster{CLUSTER}/cluster{CLUSTER}-population-gen{gen}.csv', mode='w', newline='') as file:
+            writer = csv.DictWriter(file, fieldnames=["id", "score", "victims"])
+            writer.writeheader()
+            writer.writerows(csv_population)
 
     best_pop = population[:int(len(population) / 5)]
     avg_pop = population[int(len(population) / 5):len(population) - int(len(population) / 5)]
@@ -124,32 +121,34 @@ def run_gen(gen, population = None):
     crossovered = crossover_population(selected, len(population) - len(best_pop))
     crossovered.extend(best_pop)
 
-    csv_population = []
-    for p in crossovered:
-        csv_population.append({
-            "id": p['id'],
-            "victims": ' '.join([str(victim['id']) for victim in p['victims']])
-        })
+    if gen % 100 == 0:
+        csv_population = []
+        for p in crossovered:
+            csv_population.append({
+                "id": p['id'],
+                "victims": ' '.join([str(victim['id']) for victim in p['victims']])
+            })
 
-    with open(f'./crossover/cluster{CLUSTER}-crossover-gen{gen}.csv', mode='w', newline='') as file:
-        writer = csv.DictWriter(file, fieldnames=["id", "victims"])
-        writer.writeheader()
-        writer.writerows(csv_population)
+        with open(f'./crossover/cluster{CLUSTER}-crossover-gen{gen}.csv', mode='w', newline='') as file:
+            writer = csv.DictWriter(file, fieldnames=["id", "victims"])
+            writer.writeheader()
+            writer.writerows(csv_population)
 
     # log(f"Mutating generation {gen}")
     mutated = mutate_population(crossovered)
 
-    csv_population = []
-    for p in mutated:
-        csv_population.append({
-            "id": p['id'],
-            "victims": ' '.join([str(victim['id']) for victim in p['victims']])
-        })
+    if gen % 100 == 0:
+        csv_population = []
+        for p in mutated:
+            csv_population.append({
+                "id": p['id'],
+                "victims": ' '.join([str(victim['id']) for victim in p['victims']])
+            })
 
-    with open(f'./mutated/cluster{CLUSTER}-mutated-gen{gen}.csv', mode='w', newline='') as file:
-        writer = csv.DictWriter(file, fieldnames=["id", "victims"])
-        writer.writeheader()
-        writer.writerows(csv_population)
+        with open(f'./mutated/cluster{CLUSTER}-mutated-gen{gen}.csv', mode='w', newline='') as file:
+            writer = csv.DictWriter(file, fieldnames=["id", "victims"])
+            writer.writeheader()
+            writer.writerows(csv_population)
 
     return mutated
 
@@ -219,5 +218,6 @@ def log(msg):
 
 pop = None
 for i in range(GENERATIONS):
-    log(f"Running generation {i}")
+    if i % 10 == 0:
+        log(f"Running generation {i}")
     pop = run_gen(i, pop)
