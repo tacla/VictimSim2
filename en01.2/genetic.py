@@ -8,9 +8,11 @@ victims = {}
 BASE = (65, 22)
 TIMELIMIT = 1000
 CLUSTER = 4
-POPULATION = 10_000
-GENERATIONS = 1_000
-MUTATION_RATE = 0.25
+POPULATION = 15_000
+GENERATIONS = 1_001
+MUTATION_RATE = 0.2
+WORST_POP_CHANCE = 0.15
+POPULATION_PERCENTAGE = 20
 matrix = read_matrix(90, 90, '../datasets/data_300v_90x90/env_obst.txt')
 
 with open(f'cluster{CLUSTER}.csv', newline='') as csvfile:
@@ -109,19 +111,18 @@ def run_gen(gen, population = None):
             writer.writeheader()
             writer.writerows(csv_population)
 
-    best_pop = population[:int(len(population) / 5)]
-    avg_pop = population[int(len(population) / 5):len(population) - int(len(population) / 5)]
-    worst_pop = population[len(population) - int(len(population) / 5):]
+    best_pop = population[:int(len(population) / POPULATION_PERCENTAGE)]
+    avg_pop = population[int(len(population) / POPULATION_PERCENTAGE):len(population) - int(len(population) / POPULATION_PERCENTAGE)]
+    worst_pop = population[len(population) - int(len(population) / POPULATION_PERCENTAGE):]
 
     selected = []
     selected.extend(best_pop)
     selected.extend(avg_pop)
 
     for p in worst_pop:
-        if random.random() > 0.9:
+        if random.random() > 1 - WORST_POP_CHANCE:
             selected.append(p)
 
-    # log(f"Crossovering generation {gen}")
     crossovered = crossover_population(selected, len(population) - len(best_pop))
     crossovered.extend(best_pop)
 
