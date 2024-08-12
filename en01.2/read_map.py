@@ -21,7 +21,7 @@ def pretty_print_matrix(matrix):
 
 def shortest_path(matrix, start, end):
     rows, cols = len(matrix), len(matrix[0])
-    directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+    directions = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]
 
     if matrix[start[0]][start[1]] == 100 or matrix[end[0]][end[1]] == 100:
         return float('inf'), []
