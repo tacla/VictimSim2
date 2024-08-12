@@ -90,19 +90,20 @@ def run_gen(gen, population = None):
     else:
         calculate_score(population)
 
-    csv_population = []
     for p in population:
         if len(set([victim['id'] for victim in p['victims']])) != len(p['victims']):
             log(f"Duplicate victims in population {p['id']}")
             raise Exception("Duplicate victims")
 
-        csv_population.append({
-            "id": p['id'],
-            "score": p['score'],
-            "victims": ' '.join([str(victim['id']) for victim in p['victims']])
-        })
-
     if gen % 100 == 0:
+        csv_population = []
+
+        for p in population:
+            csv_population.append({
+                "id": p['id'],
+                "score": p['score'],
+                "victims": ' '.join([str(victim['id']) for victim in p['victims']])
+            })
         with open(f'./cluster{CLUSTER}/cluster{CLUSTER}-population-gen{gen}.csv', mode='w', newline='') as file:
             writer = csv.DictWriter(file, fieldnames=["id", "score", "victims"])
             writer.writeheader()
@@ -124,34 +125,7 @@ def run_gen(gen, population = None):
     crossovered = crossover_population(selected, len(population) - len(best_pop))
     crossovered.extend(best_pop)
 
-    if gen % 100 == 0:
-        csv_population = []
-        for p in crossovered:
-            csv_population.append({
-                "id": p['id'],
-                "victims": ' '.join([str(victim['id']) for victim in p['victims']])
-            })
-
-        with open(f'./crossover/cluster{CLUSTER}-crossover-gen{gen}.csv', mode='w', newline='') as file:
-            writer = csv.DictWriter(file, fieldnames=["id", "victims"])
-            writer.writeheader()
-            writer.writerows(csv_population)
-
-    # log(f"Mutating generation {gen}")
     mutated = mutate_population(crossovered)
-
-    if gen % 100 == 0:
-        csv_population = []
-        for p in mutated:
-            csv_population.append({
-                "id": p['id'],
-                "victims": ' '.join([str(victim['id']) for victim in p['victims']])
-            })
-
-        with open(f'./mutated/cluster{CLUSTER}-mutated-gen{gen}.csv', mode='w', newline='') as file:
-            writer = csv.DictWriter(file, fieldnames=["id", "victims"])
-            writer.writeheader()
-            writer.writerows(csv_population)
 
     return mutated
 
