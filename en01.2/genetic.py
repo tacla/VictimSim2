@@ -9,7 +9,7 @@ BASE = (65, 22)
 TIMELIMIT = 1000
 CLUSTER = 4
 POPULATION = 10_000
-GENERATIONS = 10_000
+GENERATIONS = 1_000
 matrix = read_matrix(90, 90, '../datasets/data_300v_90x90/env_obst.txt')
 
 with open(f'cluster{CLUSTER}.csv', newline='') as csvfile:
