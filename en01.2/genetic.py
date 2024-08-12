@@ -10,6 +10,7 @@ TIMELIMIT = 1000
 CLUSTER = 4
 POPULATION = 10_000
 GENERATIONS = 1_000
+MUTATION_RATE = 0.25
 matrix = read_matrix(90, 90, '../datasets/data_300v_90x90/env_obst.txt')
 
 with open(f'cluster{CLUSTER}.csv', newline='') as csvfile:
@@ -155,11 +156,11 @@ def run_gen(gen, population = None):
     return mutated
 
 
-def mutate_population(population, mutation_rate=0.1):
+def mutate_population(population):
     mutated_population = []
 
     for individual in population:
-        if random.random() < mutation_rate:
+        if random.random() < MUTATION_RATE:
             victims = individual['victims']
             if len(victims) > 1:
                 idx1, idx2 = random.sample(range(len(victims)), 2)
