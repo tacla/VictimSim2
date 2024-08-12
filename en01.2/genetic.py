@@ -49,6 +49,8 @@ def get_list_score(victims):
         if not can_return(c, path_cost):
             out_of_time_victims.append(victim)
 
+    distance = cached_shortest_path(last_pos, BASE)
+    path_cost += distance
     score += path_cost
     # log(out_of_time_victims)
     return score
