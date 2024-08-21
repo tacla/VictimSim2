@@ -33,6 +33,7 @@ for s in signals:
         if k in ("id", "label", "grav"):
             continue
         s[k] = (v - minimums[k]) / (maximums[k] - minimums[k])
+    s["grav"] = s["grav"] / 100
 
 with open("normalized_env_vital_signals.csv", "w") as f:
     writer = csv.DictWriter(f, fieldnames=signals[0].keys())
