@@ -4,29 +4,40 @@ import joblib
 import pandas as pd
 
 
-def predict_grav(qPA, pulso, fResp):
-    # Load the model from disk
+def predict_grav_nn(qPA, pulso, fResp):
     model = tf.keras.models.load_model('vital_signs_model.h5')
 
-    # Load the saved scaler
     scaler = joblib.load('scaler.save')
 
-    # Create a DataFrame for the input values
     input_data = pd.DataFrame([[qPA, pulso, fResp]], columns=['qPA', 'pulso', 'fResp'])
 
-    # Scale the input data using the loaded scaler
     input_data_scaled = scaler.transform(input_data)
 
-    # Predict the 'grav' value
     predicted_grav = model.predict(input_data_scaled)
 
     return predicted_grav[0][0]
 
 
-# Example usage
-qPA = 0.9953601906626027
-pulso = 0.6119316720285145
-fResp = 0.2555589484697967
+def predict_grav_tree(qPA, pulso, fResp):
+    tree_model = joblib.load('decision_tree_model.pkl')
 
-predicted_grav = predict_grav(qPA, pulso, fResp)
-print(f'Predicted grav: {predicted_grav}')
+    scaler = joblib.load('scaler.save')
+
+    input_data = pd.DataFrame([[qPA, pulso, fResp]], columns=['qPA', 'pulso', 'fResp'])
+
+    input_data_scaled = scaler.transform(input_data)
+
+    predicted_grav = tree_model.predict(input_data_scaled)
+
+    return predicted_grav[0]
+
+qPA = 0.18445306489742827
+pulso = 0.37382904376219306
+fResp = 0.879946156836826
+# Expected 0.69419681
+
+predicted_grav = predict_grav_nn(qPA, pulso, fResp)
+print(f'Predicted grav NN: {predicted_grav}')
+
+predicted_grav = predict_grav_tree(qPA, pulso, fResp)
+print(f'Predicted grav DC: {predicted_grav}')
