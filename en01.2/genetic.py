@@ -8,11 +8,11 @@ victims = {}
 BASE = (65, 22)
 TIMELIMIT = 1000
 CLUSTER = 4
-POPULATION = 15_000
+POPULATION = 10_000
 GENERATIONS = 1_001
 MUTATION_RATE = 0.2
-WORST_POP_CHANCE = 0.15
-POPULATION_PERCENTAGE = 20
+WORST_POP_CHANCE = 0.1
+POPULATION_PERCENTAGE = 5
 matrix = read_matrix(90, 90, '../datasets/data_300v_90x90/env_obst.txt')
 
 with open(f'cluster{CLUSTER}.csv', newline='') as csvfile:

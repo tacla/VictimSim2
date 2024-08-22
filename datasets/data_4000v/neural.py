@@ -23,12 +23,12 @@ joblib.dump(scaler, 'scaler.save')
 model = models.Sequential([
     layers.Dense(32, activation='relu', input_shape=(X_train.shape[1],)),
     layers.Dense(16, activation='relu'),
-    layers.Dense(1, activation='linear')  # Single neuron for regression
+    layers.Dense(1, activation='linear')
 ])
 
 model.compile(optimizer=Adam(learning_rate=0.0005),
               loss='mean_squared_error',
-              metrics=['mean_absolute_error'])  # Use MAE or RMSE for regression metrics
+              metrics=['mean_absolute_error'])
 
 model.fit(X_train, y_train, epochs=500, batch_size=64, verbose=1)
 
