@@ -1,6 +1,9 @@
 import csv
 import random
 from datetime import datetime
+import tensorflow as tf
+import joblib
+import pandas as pd
 
 from read_map import read_matrix, shortest_path
 
@@ -15,6 +18,31 @@ WORST_POP_CHANCE = 0.1
 POPULATION_PERCENTAGE = 5
 matrix = read_matrix(90, 90, '../datasets/data_300v_90x90/env_obst.txt')
 
+MAXIMUNS = {"qPA": 0, "pulso": 0, "fResp": 0}
+MINIMUNS = {"qPA": 0, "pulso": 0, "fResp": 0}
+DEFINED_MINUMUNS = False
+
+
+def normalize(qPA, pulso, fResp, defined_minumums, maximums, minimuns):
+    if not defined_minumums:
+        minimuns = {"qPA": qPA, "pulso": pulso, "fResp": fResp}
+
+    if qPA > maximums["qPA"]:
+        maximums["qPA"] = qPA
+    if qPA < minimuns["qPA"]:
+        minimuns["qPA"] = qPA
+
+    if pulso > maximums["pulso"]:
+        maximums["pulso"] = pulso
+    if pulso < minimuns["pulso"]:
+        minimuns["pulso"] = pulso
+
+    if fResp > maximums["fResp"]:
+        maximums["fResp"] = fResp
+    if fResp < minimuns["fResp"]:
+        minimuns["fResp"] = fResp
+
+
 with open(f'cluster{CLUSTER}.csv', newline='') as csvfile:
     reader = csv.reader(csvfile, delimiter=',', quotechar='|')
     for row in reader:
@@ -25,8 +53,12 @@ with open(f'cluster{CLUSTER}.csv', newline='') as csvfile:
         victim["coords"] = (victim["coords"][0] + BASE[0], victim["coords"][1] + BASE[1])
         victim["feat"] = eval(f"{row[3:9]}".replace('"', "").replace("'",""))[0]
         victims[victim["id"]] = victim
+        normalize(victim["feat"][3], victim["feat"][4], victim["feat"][5], DEFINED_MINUMUNS, MAXIMUNS, MINIMUNS)
+        DEFINED_MINUMUNS = True
 
 cache = {}
+
+    
 def cached_shortest_path(start, end):
     if (start, end) in cache:
         return cache[(start, end)]
@@ -34,9 +66,17 @@ def cached_shortest_path(start, end):
     cache[(start, end)] = distance
     return distance
 
+def cached_gravity_cost(normalized_qPA, normalized_pulso, normalized_fResp):
+    if(normalized_qPA, normalized_pulso, normalized_fResp) in cache:
+        return cache[(normalized_qPA, normalized_pulso, normalized_fResp)]
+    grav = predict_grav_nn(normalized_qPA, normalized_pulso, normalized_fResp)
+    cache[(normalized_qPA, normalized_pulso, normalized_fResp)] = grav
+    return grav
+
 
 def get_list_score(victims):
     path_cost = 0
+    grav_cost = 0
     score = 0
     last_pos = BASE
 
@@ -44,17 +84,25 @@ def get_list_score(victims):
 
     for victim in victims:
         c = victim["coords"]
+        feat = victim["feat"] # [id, sPA, dPA, qPA, pulse, fRes]
+
         distance = cached_shortest_path(last_pos, c)
         last_pos = c
         # log(f"{last_pos} -> {c} = {distance}")
         path_cost += distance
+
+        qPA, pulso, fRes = feat[3], feat[4], feat[5]
+        normalized_qPA, normalized_pulso, normalized_fResp = normalize_values(qPA, pulso, fRes)
+        grav = cached_gravity_cost(normalized_qPA, normalized_pulso, normalized_fResp)
+
+        grav_cost += grav * path_cost
 
         if not can_return(c, path_cost):
             out_of_time_victims.append(victim)
 
     distance = cached_shortest_path(last_pos, BASE)
     path_cost += distance
-    score += path_cost
+    score += path_cost + grav_cost
     # log(out_of_time_victims)
     return score
 
@@ -84,6 +132,28 @@ def calculate_score(population):
     for i, p in enumerate(population):
         p['score'] = get_list_score(p['victims'])
     population.sort(key=lambda x: x['score'])
+
+
+def predict_grav_nn(qPA, pulso, fResp):
+    model = tf.keras.models.load_model('vital_signs_model.h5')
+
+    scaler = joblib.load('scaler.save')
+
+    input_data = pd.DataFrame([[qPA, pulso, fResp]], columns=['qPA', 'pulso', 'fResp'])
+
+    input_data_scaled = scaler.transform(input_data)
+
+    predicted_grav = model.predict(input_data_scaled)
+
+    return predicted_grav[0][0]
+
+
+def normalize_values(qPA, pulso, fResp):
+    normalized_qPA = (qPA - MINIMUNS["qPA"]) / (MAXIMUNS["qPA"] - MINIMUNS["qPA"])
+    normalized_pulso = (pulso - MINIMUNS["pulso"]) / (MAXIMUNS["pulso"] - MINIMUNS["pulso"])
+    normalized_fResp = (fResp - MINIMUNS["fResp"]) / (MAXIMUNS["fResp"] - MINIMUNS["fResp"])
+
+    return normalized_qPA, normalized_pulso, normalized_fResp
 
 
 def run_gen(gen, population = None):
