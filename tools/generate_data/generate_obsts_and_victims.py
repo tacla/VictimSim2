@@ -1,7 +1,7 @@
 ## Author: Tacla, UTFPR, 2024
 ##
 ## Generate obstacles reading a input file with the following format per line:
-## col_ini,row_ini,col_end,row_end,difficulty of access 
+## <x_ini>, <y_ini>, <x_end>, <y_end>, <difficulty of access> 
 ##
 ## It works for hor, ver and diag lines.
 ##
@@ -21,9 +21,11 @@ input_file = "input.txt"         #input
 obst_file = "env_obst.txt"      #out
 victims_file = "env_victims.txt" #out
 
-MAX_ROWS = 90                    # grid size
-MAX_COLS = 90
-N_VICTIMS = 300                   # n random coordinates 
+X_MIN = 0    # Minimum value for x index (including it)
+X_MAX = 22   # maximum value for x index (including it)
+Y_MIN = 0    # the same for y
+Y_MAX = 22                     
+N_VICTIMS = 59  # n random coordinates 
 
 ######
 
@@ -70,10 +72,11 @@ with open(obst_file, "w") as f:
 # Generate N random points that do not coincide with any of the wall coordinates or any previously generated points
 points = []
 while len(points) < N_VICTIMS:
-    r = random.randint(1, MAX_ROWS)
-    c = random.randint(1, MAX_COLS)
-    if obst.get((c, r)) is None and (c, r) not in points:
-        points.append((r, c))
+    x = random.randint(X_MIN, X_MAX)
+    y = random.randint(Y_MIN, Y_MAX)
+
+    if obst.get((x, y)) is None and (x, y) not in points:
+        points.append((x, y))
 
 if N_VICTIMS > 0:
     # Sort the points by row number and then by column number
