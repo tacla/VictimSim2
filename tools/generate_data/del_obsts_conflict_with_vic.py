@@ -1,5 +1,5 @@
 ## This program reads the file env_victims.txt and if the (x, y) victim's coordinate matches
-## a wall (an obstacle with difficulty = 10.0), then it removes the wall.
+## a wall (an obstacle with difficulty = 100.0), then it removes the wall.
 ##
 ## input: env_obst.txt and env_victims.txt
 ## output: filtered_env_obst.txt without walls that were in the same position as the victims
