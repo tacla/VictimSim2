@@ -1,8 +1,7 @@
 import csv
 
 def sort_csv_by_last_column(input_file, output_file):
-    """Sorts a CSV file by the last column in descending order, ignoring spaces after the comma.
-
+    """Sorts a CSV env_vital_signals.txt file by the last column (severity label) in descending order
     Args:
         input_file: The name of the input CSV file.
         output_file: The name of the output CSV file.
