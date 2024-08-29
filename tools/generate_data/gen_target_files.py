@@ -1,37 +1,42 @@
-"""
-Extracts the before last and last columns from a CSV file and saves them to separate files.
-
-Args:
-   input_file (str): the env_vital_signals.txt file (with severity values and labels)
-   file_values (str): the target file for the severity values
-   file_labels (str): the target file for the severity labels
-"""
+#############################################################################
+## Cria o arquivo target para teste cego a partir dos arquivos:
+## 1) env_vital_signals.txt
+## 2) env_victims.txt
+##
+## Lê o arquivo de sinais vitais com valores e label de gravidade, o arquivo
+## de coordenadas x, y das vítimas no ambiente e grava um arquivo de saida
+## no formato: <id, x, y, gravidade, classe>
 
 import csv
 
-def extract_target_values(input_file, out_values, out_labels):
-    with open(input_file, 'r', newline='') as infile:
-        reader = csv.reader(infile)
+# Input CSV file names
+file_vs = 'env_vital_signals.txt'
+file_vict = 'env_victims.txt'
 
-        with open(out_values, 'w', newline='') as sev_values_file, open(out_labels, 'w', newline='') as sev_labels_file:
-            sev_values_writer = csv.writer(sev_values_file)
-            sev_labels_writer = csv.writer(sev_labels_file)
-            count = 0
+# Output CSV file name
+file_verif = 'target.txt'
 
-            for row in reader:
-                # Extract the before last and last columns
-                sev_value = row[-2].lstrip()  # severity value
-                sev_label = row[-1].lstrip()  # severity label
-                
-                # Write the values to the respective output files
-                sev_values_writer.writerow([sev_value])
-                sev_labels_writer.writerow([sev_label])
-                count += 1
+# Open file_vs and file_vict for reading
+with open(file_vs, 'r') as vs_file, open(file_vict, 'r') as vict_file:
+    # Create CSV readers for file_vs and file_vict
+    vs_reader = csv.reader(vs_file)
+    vict_reader = csv.reader(vict_file)
 
-            print(f"{out_values} and {out_labels} generated with {count} rows each")
+    # Open file_verif for writing
+    with open(file_verif, 'w', newline='') as verif_file:
+        # Create a CSV writer for file_verif
+        verif_writer = csv.writer(verif_file)
 
-# Example usage
-input_file = "env_vital_signals.txt"
-file_values = "target_values.txt"
-file_labels = "target_labels.txt"
-extract_target_values(input_file, file_values, file_labels)
+        # Iterate through rows of file_vs and file_vict
+        for vs_row, vict_row in zip(vs_reader, vict_reader):
+            # Extract the desired columns
+            id, grav, classe = vs_row[0], vs_row[6], vs_row[7]
+            x, y = vict_row[0], vict_row[1]
+
+            # Create a new row for file_verif
+            verif_row = [id, x, y, grav, classe]
+
+            # Write the row to file_verif
+            verif_writer.writerow(verif_row)
+
+print(f'File "{file_verif}" has been generated.')
