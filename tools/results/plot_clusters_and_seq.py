@@ -38,7 +38,7 @@ import sys
 ABS_COORDINATES = False
 
 # Input files and folders
-data_folder = "./datasets/data_300v_90x90"
+data_folder = "./datasets/data_408v_94x94"
 env_file = "env_config.txt"                       # the program concatenates data_folder + env_file
 obst_file = "env_obst.txt"                        # the program concatenates data_folder + obst_file                      
 victims_file = "env_victims.txt"                  # the program concatenates data_folder + victims_file   
@@ -60,15 +60,18 @@ VIC_COLOR_SEV3 = (255,255,51)
 VIC_COLOR_SEV4 = (128,255,0)
 VIC_COLOR_LIST = [VIC_COLOR_SEV1, VIC_COLOR_SEV2, VIC_COLOR_SEV3, VIC_COLOR_SEV4]
 
+# CLUSTER COLORS
+rgb_idx = -1
+rgb_cluster = [(0,0,255), (255,0,0), (0,255,0), (152,10,15)]
+
 def distance(p1, p2):
     return math.sqrt((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2)
 
 # Function to generate random colors for embracing the clusters
 def generate_random_color():
-    r = random.randint(100,255)
-    g = 0
-    b = random.randint(0, 150)
-    return r, g, b
+    rgb_idx += 1
+    rgb_idx = rgb_idx % 4
+    return rgb[rgb_idx][0], rgb[rgb_idx][1], rgb[rgb_idx][2]
 
 # Open config file
 env_dic = {}
@@ -250,9 +253,10 @@ for file_name, cluster in cluster_data.items():
     max_c = -sys.maxsize - 1
     max_r = -sys.maxsize - 1
     tot_vic = 0
-    vics_sev=[0]*4  # victims per severity 
+    vics_sev=[0]*4  # victims per severity
     
-    cluster_color = generate_random_color()
+    rgb_idx = rgb_idx + 1
+    cluster_color = rgb_cluster[rgb_idx]
     for i, c, r, g, l in cluster:
         tot_vic = tot_vic + 1
         c = c + base_c
@@ -332,8 +336,12 @@ print(f"  upper right quad.: {vics_quad[1]} ({100*vics_quad[1]/tot_vics:.1f}%)")
 print(f"  lower left  quad.: {vics_quad[2]} ({100*vics_quad[2]/tot_vics:.1f}%)")
 print(f"  lower right quad.: {vics_quad[3]} ({100*vics_quad[3]/tot_vics:.1f}%)")
 
+rgb_idx = -1
+
 for file_name, seq in seq_data.items():        
     # Draw lines between each victim in the cluster
+
+    rgb_idx = rgb_idx + 1
 
     for i in range(len(seq) - 1):
         c1 = seq[i][1] + base_c
@@ -343,7 +351,7 @@ for file_name, seq in seq_data.items():
         #print(f"seq: {file_name} ({c1},{r1}) ({c2},{r2})")
         start = (c1 * CELLW + CELLW / 1.75, r1 * CELLH + CELLH / 1.75)
         end = (c2 * CELLW + CELLW / 2, r2 * CELLH + CELLH / 2)
-        pygame.draw.line(screen, cluster_color, start, end, 5)
+        pygame.draw.line(screen, rgb_cluster[rgb_idx], start, end, 1)
         
         # Calculate midpoint of the line
         mid_x = (start[0] + end[0])//2
