@@ -6,20 +6,16 @@ import time
 from vs.environment import Env
 from explorer import Explorer
 from rescuer import Rescuer
+from pathlib import Path
 
-def main(data_folder_name):
-   
-    # Set the path to config files and data files for the environment
-    current_folder = os.path.abspath(os.getcwd())
-    data_folder = os.path.abspath(os.path.join(current_folder, data_folder_name))
-
-    
+def main(data_folder_name, cfg_ag_folder):
+      
     # Instantiate the environment
     env = Env(data_folder)
     
     # config files for the agents
-    rescuer_file = os.path.join(data_folder, "rescuer_config.txt")
-    explorer_file = os.path.join(data_folder, "explorer_config.txt")
+    rescuer_file = os.path.join(cfg_ag_folder, "rescuer_1_config.txt")
+    explorer_file = os.path.join(cfg_ag_folder, "explorer_1_config.txt")
     
     # Instantiate agents rescuer and explorer
     resc = Rescuer(env, rescuer_file)
@@ -37,8 +33,11 @@ if __name__ == '__main__':
     pass it by the argument line"""
     
     if len(sys.argv) > 1:
-        data_folder_name = sys.argv[1]
+        data_folder = sys.argv[1]
+        cfg_ag_folder = sys.argv[2]
     else:
-        data_folder_name = os.path.join("datasets", "data_12x12_10vic")
+        cur_folder = Path.cwd()
+        data_folder = os.path.join(cur_folder.parent, "datasets", "data_10v_12x12")
+        cfg_ag_folder = os.path.join(cur_folder, "cfg_1")
         
-    main(data_folder_name)
+    main(data_folder, cfg_ag_folder)
