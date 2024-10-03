@@ -16,3 +16,6 @@ You should get a file structure like:
    + explorer.py
    + **[vs]**
       + all the VictimSim .py
+
+## Datasets ##
+The datasets include information about the environment (such as size and obstacles) and the victims (including their positions and vital signs). To ensure other systems can also access and utilize these datasets, let's create a folder outside the multiagent system's scope.
