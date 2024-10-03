@@ -23,3 +23,16 @@ You should get a file structure like:
 ## Datasets ##
 The datasets include information about the environment (such as size and obstacles) and the victims (including their positions and vital signs). To ensure other systems can also access and utilize these datasets, let's create a folder outside the multiagent system's scope.
 - download the dataset containing [12 victims in a 12 x 12 grid](https://downgit.github.io/#/home?url=https://github.com/tacla/VictimSim2/tree/main/datasets/data_10v_12X12)
+- extract all the files in the folder **[datasets]**. This last is at the same level of the **[target]** folder.
+
+You should get a file structure like:
++ **[target]**
++ **[datasets]**
+  + [data_10v_12X12]
+    + env_config.txt          *environment configuration*
+    + env_obst.txt            *obstacles' positions*
+    + env_victims.txt         *victims' positions*
+    + env_vital_signals.txt   *victims' vital signals*
+   
+## Run ##
+Now, you can run the system from the *main.py*
