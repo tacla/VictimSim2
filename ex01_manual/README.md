@@ -3,10 +3,11 @@ This example allows the user to control the explorer agent with commands given b
 
 How to use:
 - download the [ex01_manual] folder (use [DownGit](https://downgit.github.io) or [direct here](https://downgit.github.io/#/home?url=https://github.com/tacla/VictimSim2/tree/main/ex01_manual))
-- copy the explorer.py, rescuer.py, and main.py to the chosen folder **[target]**
-- copy the **[vs]** folder to the **[target]** folder
+- extract all the files in the selected **[target]** folder
+- download the [vs] folder (use [DownGit](https://downgit.github.io) or [direct here](https://downgit.github.io/#/home?url=https://github.com/tacla/VictimSim2/tree/main/ex01_manual))
+- extract all the files and copy the **[vs]** folder to the **[target]** folder
 
-You should get a structure like:
+You should get a file structure like:
 
 + **[target]**
    + main.py
