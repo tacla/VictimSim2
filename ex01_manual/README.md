@@ -15,7 +15,11 @@ You should get a file structure like:
    + rescuer.py
    + explorer.py
    + **[vs]**
-      + all the VictimSim .py
+      + abstract_agent.py
+      + constants.py
+      + environment.py
+      + physical_agent.py
 
 ## Datasets ##
 The datasets include information about the environment (such as size and obstacles) and the victims (including their positions and vital signs). To ensure other systems can also access and utilize these datasets, let's create a folder outside the multiagent system's scope.
+- download the dataset containing [12 victims in a 12 x 12 grid](https://downgit.github.io/#/home?url=https://github.com/tacla/VictimSim2/tree/main/datasets/data_10v_12X12)
