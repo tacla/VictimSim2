@@ -1,4 +1,4 @@
-# EXAMPLE 01: Manual controlled explorer and fixed rescue plan
+# EXAMPLE 01: Manually controlled explorer and fixed rescue plan
 This example allows the user to control the explorer agent with commands given by the keyboard. Upon reaching the time limit, the explorer agent calls the rescuer, which in turn executes a plan stored in memory.
 
 How to use:
