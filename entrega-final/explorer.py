@@ -29,7 +29,7 @@ class Stack:
 
 class Explorer(AbstAgent):
     """ class attribute """
-    MAX_DIFFICULTY = 30             # the maximum degree of difficulty to enter into a cell
+    MAX_DIFFICULTY = 20             # the maximum degree of difficulty to enter into a cell
 
     x,y = 0,0
     dfs_untried = {}
@@ -48,7 +48,7 @@ class Explorer(AbstAgent):
         """
 
         super().__init__(env, config_file)
-        self.walk_stack = Stack()  # a stack to store the movements
+        self.come_back_path = Stack()  # a stack to store the movements
         self.walk_time = 0         # time consumed to walk when exploring (to decide when to come back)
         self.set_state(VS.ACTIVE)  # explorer is active since the begin
         self.resc = resc           # reference to the rescuer agent
@@ -86,7 +86,7 @@ class Explorer(AbstAgent):
         }
         
         # Obtem a ordem baseada no nome do robô
-        if self.walk_time <= 1000:
+        if self.walk_time <= self.TLIM*0.2:
             order = order_toGoal.get(self.NAME, list(self.AC_INCR.keys()))
         else:
             order = list(self.AC_INCR.keys())
@@ -246,7 +246,6 @@ class Explorer(AbstAgent):
         if result == VS.EXECUTED:
             # check for victim returns -1 if there is no victim or the sequential
             # the sequential number of a found victim
-            self.walk_stack.push((dx, dy))
 
             # update the agent's position relative to the origin
             self.x += dx
@@ -279,18 +278,20 @@ class Explorer(AbstAgent):
         return
 
     def come_back(self):
-        self.flag_explore = False
-        to_walk = self.a_star((self.x, self.y), (0,0), self.manhattan_distance)
 
-        # Moves the body to another position
-        if len(to_walk) > 1:
-            dx, dy = to_walk[-2][0] - to_walk[-1][0], to_walk[-2][1] - to_walk[-1][1]
-            to_walk.pop()
+        # Find the best path until the origem position (0,0)
+        if self.flag_explore == True:
+            self.come_back_path = self.a_star((self.x, self.y), (0,0), self.manhattan_distance)
+            self.flag_explore = False
+
+        # Obtaining dx and dy movements to next position
+        if len(self.come_back_path) > 1:
+             dx, dy = self.come_back_path[-2][0] - self.come_back_path[-1][0], self.come_back_path[-2][1] - self.come_back_path[-1][1]
+             self.come_back_path.pop()
         else:
-            dx, dy = to_walk.pop()
-        # dx, dy = self.walk_stack.pop()
-        # dx = dx * -1
-        # dy = dy * -1
+            dx, dy = self.come_back_path.pop()
+
+        # Showing Results
         result = self.walk(dx, dy)
         if result == VS.BUMPED:
             print(f"{self.NAME}: when coming back bumped at ({self.x+dx}, {self.y+dy}) , rtime: {self.get_rtime()}")
@@ -300,14 +301,14 @@ class Explorer(AbstAgent):
             # update the agent's position relative to the origin
             self.x += dx
             self.y += dy
-            #print(f"{self.NAME}: coming back at ({self.x}, {self.y}), rtime: {self.get_rtime()}")
+            print(f"{self.NAME}: coming back at ({self.x}, {self.y}), rtime: {self.get_rtime()}")
         
     def deliberate(self) -> bool:
         """ The agent chooses the next action. The simulator calls this
         method at each cycle. Must be implemented in every agent"""
 
         # keeps exploring while there is enough time
-        if self.get_rtime() > self.manhattan_distance((self.x, self.y))*self.COST_LINE*1.5 + self.MAX_DIFFICULTY and self.flag_explore:
+        if self.get_rtime() > self.manhattan_distance((self.x, self.y))*self.COST_LINE*1.5 + 2*self.MAX_DIFFICULTY and self.flag_explore:
             self.explore()
             return True
 
