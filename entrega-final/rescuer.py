@@ -56,6 +56,7 @@ class Rescuer(AbstAgent):
         self.set_state(VS.IDLE)
 
     def save_cluster_csv(self, cluster, cluster_id):
+        os.makedirs('./clusters', exist_ok=True)
         filename = f"./clusters/cluster{cluster_id}.txt"
         with open(filename, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
