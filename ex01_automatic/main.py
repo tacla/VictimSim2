@@ -17,6 +17,7 @@ def main(data_folder, agent_config_folder):
     rescuer_file = os.path.join(agent_config_folder, "rescuer_1_config.txt")
     explorer_file = os.path.join(agent_config_folder, "explorer_1_config.txt")
     
+    print(rescuer_file)
     # Instanciando os agentes socorrista e explorador
     # O explorador precisa conhecer o socorrista para enviar o mapa, por isso o socorrista deve ser inicializado antes
     rescuer = Rescuer(environment, rescuer_file)
@@ -35,6 +36,9 @@ if __name__ == '__main__':
     else:
         data_folder = os.path.join(current_folder.parent, "datasets", "data_10v_12x12")
         
-    agent_config_folder = os.path.join(current_folder, "config")
+    if len(sys.argv) > 2:
+        agent_config_folder = sys.argv[2]
+    else:
+        agent_config_folder = os.path.join(current_folder, "config")
 
     main(data_folder, agent_config_folder)
