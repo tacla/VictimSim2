@@ -29,16 +29,7 @@ class Stack:
 
 class Explorer(AbstAgent):
     """ class attribute """
-    MAX_DIFFICULTY = 20             # the maximum degree of difficulty to enter into a cell
-
-    x,y = 0,0
-    dfs_untried = {}
-    dfs_result = {}
-    unbacktracked = {}
-    visited_cells = [(x,y)]    # record for visited cells
-    last_position, last_movement = None, None
-    flag_explore = True
-    is_unbacktracking = False
+    MAX_DIFFICULTY = 20             # the maximum degree of difficulty to enter into a cell        
     
     def __init__(self, env, config_file, resc):
         """ Construtor do agente random on-line
@@ -48,23 +39,41 @@ class Explorer(AbstAgent):
         """
 
         super().__init__(env, config_file)
-        self.come_back_path = Stack()  # a stack to store the movements
-        self.walk_time = 0         # time consumed to walk when exploring (to decide when to come back)
-        self.set_state(VS.ACTIVE)  # explorer is active since the begin
-        self.resc = resc           # reference to the rescuer agent
-        self.x = 0                 # current x position relative to the origin 0
-        self.y = 0                 # current y position relative to the origin 0
-        self.map = Map()           # create a map for representing the environment
-        self.victims = {}          # a dictionary of found victims: (seq): ((x,y), [<vs>])
-                                   # the key is the seq number of the victim,(x,y) the position, <vs> the list of vital signals
+
+        # {((0, 0), 1): (1, -1), ((1, -1), 1): (2, -2)}  -> pos_init, move: pos_after
+        self.dfs_moveResults = {}       # armazena a posição obtida de acordo com o movimento realizado na posição passada
+
+        # {(1, -1): [(0, 0)], (2, -2): [(1, -1)]}        -> pos_after: pos_init
+        self.unbacktracked = {}         # dicionario de movimentos para backtrack por cada posição
+
+        # {(0, 0): [2, 0, 3, 7, 4, 6, 5], (1, -1): [1, 2, 0, 3, 7, 4, 6, 5]}      -> pos: untried_Movements
+        self.untried_move_by_pos = {}   # Retorna os movimentos ainda nao tentados para determinada posição
+
+        # {(0,0), (1,1), (2,1), (3,2)}                   -> pilha de posições até a origem
+        self.come_back_path = Stack()   # a stack to store the movements to return to the origin
+
+        self.is_unbacktracking = False  # Flag para indicar se o robo esta em movimento de backtracking
+        self.flag_explore = True        # Flag para indicar se esta em exploraçao ou come_back
+        self.last_position = None       # Armazena a ultima posição do robo
+        self.last_movement = None       # Armazena o ultimo movimento do robo
+
+
+        self.walk_time = 0              # time consumed to walk when exploring (to decide when to come back)
+        self.set_state(VS.ACTIVE)       # explorer is active since the begin
+        self.resc = resc                # reference to the rescuer agent
+        self.x = 0                      # current x position relative to the origin 0
+        self.y = 0                      # current y position relative to the origin 0
+        self.map = Map()                # create a map for representing the environment
+        self.victims = {}               # a dictionary of found victims: (seq): ((x,y), [<vs>])
+                                        # the key is the seq number of the victim,(x,y) the position, <vs> the list of vital signals
 
         # put the current position - the base - in the map
         self.map.add((self.x, self.y), 1, VS.NO_VICTIM, self.check_walls_and_lim())
 
 
-    def search_key(self, dict, state, target):
+    def search_key(self, dict, position, target):
             for key, value in dict.items():
-                if state in key:
+                if position in key:
                     if value == target:
                         return key
 
@@ -77,35 +86,42 @@ class Explorer(AbstAgent):
     # 5: (-1, 1),  # dl: Down left left diagonal
     # 6: (-1, 0),  #  l: Left
     # 7: (-1, -1)  # ul: Up left diagonal        
-    def actions(self, state):
-        order_toGoal = {
+    def actions(self, position):
+        orderToCorner = {
             "EXPL_1": [1, 2, 0, 3, 7, 4, 6, 5], # Corner Up Right 
             "EXPL_2": [7, 6, 0, 1, 5, 4, 2, 3], # Corner Up Left 
             "EXPL_3": [5, 6, 4, 7, 3, 0, 2, 1], # Corner Down Left 
             "EXPL_4": [3, 2, 4, 5, 1, 0, 6, 7], # Corner Down Right 
         }
+
+        orderToMaxLeft = {
+            "EXPL_1": [6, 5, 7, 4, 0, 1, 3, 2], # Corner Up Right 
+            "EXPL_2": [6, 5, 7, 4, 0, 1, 3, 2], # Corner Up Left 
+            "EXPL_3": [6, 5, 7, 4, 0, 1, 3, 2], # Corner Down Left 
+            "EXPL_4": [6, 5, 7, 4, 0, 1, 3, 2], # Corner Down Right 
+        }
         
         # Obtem a ordem baseada no nome do robô
-        if self.walk_time <= self.TLIM*0.2:
-            order = order_toGoal.get(self.NAME, list(self.AC_INCR.keys()))
+        if self.walk_time <= self.TLIM*0.4:
+            order = orderToCorner.get(self.NAME, list(self.AC_INCR.keys()))
         else:
             order = list(self.AC_INCR.keys())
             random.shuffle(order)
         
-        if state in self.dfs_untried:
+        if position in self.untried_move_by_pos:
             # Ordena as ações restantes de acordo com a ordem definida para o robô
-            return sorted(self.dfs_untried[state], key=lambda x: order.index(x))
+            return sorted(self.untried_move_by_pos[position], key=lambda x: order.index(x))
         else:
             # Retorna todas as ações, já ordenadas pela sequência do robô
             return order
         
 
-    def add_unbacktracked(self, state):
-        if self.last_position != state:
-            if state not in list(self.unbacktracked.keys()):
-                self.unbacktracked[state] = [self.last_position]
+    def add_unbacktracked(self, position):
+        if self.last_position != position:
+            if position not in list(self.unbacktracked.keys()):
+                self.unbacktracked[position] = [self.last_position]
             else:
-                self.unbacktracked[state].insert(0,self.last_position)
+                self.unbacktracked[position].insert(0,self.last_position)
 
 
     def manhattan_distance(self, position):
@@ -114,17 +130,17 @@ class Explorer(AbstAgent):
 
     # Function to explore map while have time remaining
     def online_dfs(self, position):
-        if position not in self.dfs_untried:
-            self.dfs_untried[position] = self.actions(position)
-        
+        if position not in self.untried_move_by_pos:
+            self.untried_move_by_pos[position] = self.actions(position)
+
         # Checa se moveu-se para um novo estado, se sim e não esta em backtracking, adiciona o last_state para backtracking
         if self.last_position != None and self.last_position != position:
-            self.dfs_result[(self.last_position, self.last_movement)] = position
+            self.dfs_moveResults[(self.last_position, self.last_movement)] = position
             if not self.is_unbacktracking:
                 self.add_unbacktracked(position)
 
         # Checa se já realizou todas as ações possiveis para o estado atual
-        if len(self.dfs_untried[position]) == 0:
+        if len(self.untried_move_by_pos[position]) == 0:
             if len(self.unbacktracked[position]) == 0:
                 return (0,0)
             else:
@@ -133,12 +149,12 @@ class Explorer(AbstAgent):
 
                 self.is_unbacktracking = True
                 
-                memory = self.dfs_result
-                self.last_movement = self.search_key(memory, position, unback_pos)[1]
+
+                self.last_movement = self.search_key(self.dfs_moveResults, position, unback_pos)[1]
         else:
             self.is_unbacktracking = False
-            self.last_movement = self.dfs_untried[position][0]
-            del(self.dfs_untried[position][0])
+            self.last_movement = self.untried_move_by_pos[position][0]
+            del(self.untried_move_by_pos[position][0])
 
         self.last_position = position
         #print(f'State:{state}\nUntried{self.dfs_untried[state]}')
@@ -154,13 +170,13 @@ class Explorer(AbstAgent):
         return total_path   
 
 
-    def return_neighbors(self, state):
+    def return_neighbors(self, position):
         neighbors = []
         
         for i in range(-1,2):
             for j in range(-1,2):
-                neighbor = state[0]+i, state[1]+j
-                if neighbor in self.visited_cells and neighbor != state:
+                neighbor = position[0]+i, position[1]+j
+                if self.map.in_map(neighbor) and neighbor != position:
                     neighbors.append(neighbor)
         return neighbors
 
@@ -178,8 +194,8 @@ class Explorer(AbstAgent):
         came_from = {}
         g_score = {}
         f_score = {}
-
-        for e in self.visited_cells:
+        
+        for e in self.map.data:
             g_score[e] = math.inf
             f_score[e] = math.inf
         
@@ -250,7 +266,6 @@ class Explorer(AbstAgent):
             # update the agent's position relative to the origin
             self.x += dx
             self.y += dy
-            self.visited_cells.append((self.x, self.y))
             
             # update the walk time
             self.walk_time = self.walk_time + (rtime_bef - rtime_aft)
@@ -308,12 +323,11 @@ class Explorer(AbstAgent):
         method at each cycle. Must be implemented in every agent"""
 
         # keeps exploring while there is enough time
-        if self.get_rtime() > self.manhattan_distance((self.x, self.y))*self.COST_LINE*1.5 + 2*self.MAX_DIFFICULTY and self.flag_explore:
+        if self.get_rtime() > self.manhattan_distance((self.x, self.y))*self.COST_LINE*1.5 + 50 and self.flag_explore:
             self.explore()
             return True
 
         # no more come back walk actions to execute or already at base
-        #if self.walk_stack.is_empty() or 
         if (self.x == 0 and self.y == 0):
             # time to pass the map and found victims to the master rescuer
             self.resc.sync_explorers(self.map, self.victims)
