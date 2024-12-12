@@ -93,13 +93,6 @@ class Explorer(AbstAgent):
             "EXPL_3": [5, 6, 4, 7, 3, 0, 2, 1], # Corner Down Left 
             "EXPL_4": [3, 2, 4, 5, 1, 0, 6, 7], # Corner Down Right 
         }
-
-        orderToMaxLeft = {
-            "EXPL_1": [6, 5, 7, 4, 0, 1, 3, 2], # Corner Up Right 
-            "EXPL_2": [6, 5, 7, 4, 0, 1, 3, 2], # Corner Up Left 
-            "EXPL_3": [6, 5, 7, 4, 0, 1, 3, 2], # Corner Down Left 
-            "EXPL_4": [6, 5, 7, 4, 0, 1, 3, 2], # Corner Down Right 
-        }
         
         # Obtem a ordem baseada no nome do robô
         if self.walk_time <= self.TLIM*0.4:
@@ -157,9 +150,6 @@ class Explorer(AbstAgent):
             del(self.untried_move_by_pos[position][0])
 
         self.last_position = position
-        #print(f'State:{state}\nUntried{self.dfs_untried[state]}')
-        #if len(self.unbacktracked) != 0:
-        #    print(f'Unback:{self.unbacktracked[state]}\n')
         return self.last_movement
 
     def reconstruct_path(self, came_from, current):
@@ -172,25 +162,16 @@ class Explorer(AbstAgent):
 
     def return_neighbors(self, position):
         neighbors = []
-        
         for i in range(-1,2):
             for j in range(-1,2):
                 neighbor = position[0]+i, position[1]+j
                 if self.map.in_map(neighbor) and neighbor != position:
                     neighbors.append(neighbor)
         return neighbors
-
-
-    def cost(self, current, neighbor):
-        dx = neighbor[0] - current[0]
-        dy = neighbor[1] - current[1]
-        if dx != 0 and dy != 0:
-            return self.COST_DIAG
-        return self.COST_LINE
     
 
-    def a_star(self, start, goal, h):
-        open_set = {start}
+    def a_star(self, cur_Position, goal):
+        open_set = {cur_Position}
         came_from = {}
         g_score = {}
         f_score = {}
@@ -199,8 +180,8 @@ class Explorer(AbstAgent):
             g_score[e] = math.inf
             f_score[e] = math.inf
         
-        g_score[start] = 0
-        f_score[start] = h(start)
+        g_score[cur_Position] = 0
+        f_score[cur_Position] = self.manhattan_distance(cur_Position)
 
         while len(open_set) != 0:
             value = math.inf
@@ -216,11 +197,11 @@ class Explorer(AbstAgent):
 
             for neighbor in self.return_neighbors(current):
                 
-                tentative_gscore = g_score[current] + self.cost(current, neighbor)
+                tentative_gscore = g_score[current] + self.map.get_difficulty(neighbor)
                 if tentative_gscore < g_score[neighbor]:
                     came_from[neighbor] = current
                     g_score[neighbor] = tentative_gscore
-                    f_score[neighbor] = tentative_gscore + h(neighbor)
+                    f_score[neighbor] = tentative_gscore + self.manhattan_distance(neighbor)
                     if neighbor not in open_set:
                         open_set.add(neighbor)
         print('Erro!')
@@ -296,7 +277,7 @@ class Explorer(AbstAgent):
 
         # Find the best path until the origem position (0,0)
         if self.flag_explore == True:
-            self.come_back_path = self.a_star((self.x, self.y), (0,0), self.manhattan_distance)
+            self.come_back_path = self.a_star((self.x, self.y), (0,0))
             self.flag_explore = False
 
         # Obtaining dx and dy movements to next position
