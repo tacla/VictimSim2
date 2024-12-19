@@ -21,3 +21,6 @@ and
 For each run, copy and paste the values into a CSV file like this:
 Ve1,Ve2,Ve3,Ve4,Veg,Vs1,Vs2,Vs3,Vs4,Vsg
 24,29,9,32,0.21615384615384614,20,28,7,27,0.18846153846153846
+...
+
+After collecting the desired data, run the exp_plot_results.py
