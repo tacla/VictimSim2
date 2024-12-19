@@ -1,0 +1,44 @@
+TLIM
+EXPLORER: 5000
+RESCUER:  1000
+
+Descriptor
+    V1   V2  V3  V4        SG
+0  112  124  84  88  18528.67
+
+Data
+   Ve1  Ve2  Ve3  Ve4       Veg  Vs1  Vs2  Vs3  Vs4       Vsg
+0   24   29    9   32  0.216154   20   28    7   27  0.188462
+1   27   32   24   21  0.251538   27   19   22   15  0.213846
+2   36   22   11   14  0.244615   36   22   11   14  0.244615
+3   35   36   28   15  0.299231   35   36   28   13  0.297692
+Runs: 4
+Max mean value: 31
+
+Found victims (mean abs value)
+Ve1    30.50
+Ve2    29.75
+Ve3    18.00
+Ve4    20.50
+
+Found victims (mean value over the total of victims)
+Ve1: 0.2723%
+Ve2: 0.2399%
+Ve3: 0.2143%
+Ve4: 0.2330%
+
+Saved victims (mean abs value)
+Vs1    29.50
+Vs2    26.25
+Vs3    17.00
+Vs4    17.25
+
+Saved victims (mean value over the total of victims)
+Vs1: 0.2634%
+Vs2: 0.2117%
+Vs3: 0.2024%
+Vs4: 0.1960%
+
+Veg and Vsg
+Veg: 0.253
+Vsg: 0.236
