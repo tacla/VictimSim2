@@ -33,12 +33,13 @@ import random
 import math
 import csv
 import sys
+import webcolors
 
 # Coordinates of cluster and sequence files are absolute to the base position?
 ABS_COORDINATES = False
 
 # Input files and folders
-data_folder = "./datasets/data_408v_94x94"
+data_folder = "./dataset_430v_100x100"
 env_file = "env_config.txt"                       # the program concatenates data_folder + env_file
 obst_file = "env_obst.txt"                        # the program concatenates data_folder + obst_file                      
 victims_file = "env_victims.txt"                  # the program concatenates data_folder + victims_file   
@@ -62,7 +63,7 @@ VIC_COLOR_LIST = [VIC_COLOR_SEV1, VIC_COLOR_SEV2, VIC_COLOR_SEV3, VIC_COLOR_SEV4
 
 # CLUSTER COLORS
 rgb_idx = -1
-rgb_cluster = [(0,0,255), (255,0,0), (0,255,0), (152,10,15)]
+rgb_cluster = [webcolors.name_to_rgb("blue"), webcolors.name_to_rgb("purple"), webcolors.name_to_rgb("orange"), webcolors.name_to_rgb("salmon")]
 
 def distance(p1, p2):
     return math.sqrt((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2)
@@ -72,6 +73,15 @@ def generate_random_color():
     rgb_idx += 1
     rgb_idx = rgb_idx % 4
     return rgb[rgb_idx][0], rgb[rgb_idx][1], rgb[rgb_idx][2]
+
+
+def get_color_name(rgb):
+    try:
+        # Tenta encontrar o nome exato da cor
+        return webcolors.rgb_to_name(rgb)
+    except ValueError:
+        closest_name = f"{rgb[0]},{rgb[1]},{rgb[2]}"
+        return f"Closest: {closest_name}"
 
 # Open config file
 env_dic = {}
@@ -262,14 +272,14 @@ for file_name, cluster in cluster_data.items():
         c = c + base_c
         r = r + base_r
 
-        if c < min_c:
+        if c <= min_c:
             min_c = c
-        if c > max_c:
+        if c >= max_c:
              max_c = c
 
-        if r < min_r:
+        if r <= min_r:
             min_r = r
-        if r > max_r:
+        if r >= max_r:
             max_r = r
 
         vics_sev[l-1] = vics_sev[l-1]+1
@@ -288,7 +298,7 @@ for file_name, cluster in cluster_data.items():
         
         
     pygame.draw.rect(screen, cluster_color, (min_c * CELLW, min_r * CELLH, (max_c - min_c + 1) * CELLW, (max_r - min_r + 1) * CELLH), 5)
-    print(f"Cluster: {file_name} {tot_vic} victims, being...")
+    print(f"Cluster: {file_name} {tot_vic} victims, {get_color_name(cluster_color)} being...")
     print(f"   {vics_sev[0]} critical,")
     print(f"   {vics_sev[1]} instable,")
     print(f"   {vics_sev[2]} pot inst., and")
@@ -298,9 +308,9 @@ print(f"{gen_min_c}, {gen_min_r} : {gen_max_c}, {gen_max_r}")
 mid_c = gen_min_c + (gen_max_c - gen_min_c)/2
 print(f"mid col {mid_c} = {mid_c * CELLW}")
 mid_r = gen_min_r + (gen_max_r - gen_min_r)/2
-pygame.draw.line(screen, (255,0,0), (mid_c * CELLW, gen_min_r * CELLH), (mid_c * CELLW, gen_max_r * CELLH), 2)
-pygame.draw.line(screen, (255,0,0), (gen_min_c * CELLW, mid_r * CELLH), (gen_max_c * CELLW, mid_r * CELLH), 2)
-pygame.draw.rect(screen, (255,0,0), (gen_min_c * CELLW, gen_min_r * CELLH, (gen_max_c - gen_min_c + 1) * CELLW, (gen_max_r - gen_min_r + 1) * CELLH), 2)
+##pygame.draw.line(screen, (255,0,0), (mid_c * CELLW, gen_min_r * CELLH), (mid_c * CELLW, gen_max_r * CELLH), 2)
+##pygame.draw.line(screen, (255,0,0), (gen_min_c * CELLW, mid_r * CELLH), (gen_max_c * CELLW, mid_r * CELLH), 2)
+##pygame.draw.rect(screen, (255,0,0), (gen_min_c * CELLW, gen_min_r * CELLH, (gen_max_c - gen_min_c + 1) * CELLW, (gen_max_r - gen_min_r + 1) * CELLH), 2)
 
 
 print(f"\n----------------------------------------")
