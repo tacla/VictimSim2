@@ -12,5 +12,5 @@ Total numbers:
 * Accumulated Severity Value: 17815.7
 
 GRID WITH OBSTACLES
-<img src="[caminho/para/imagem.png](https://github.com/user-attachments/assets/9784d7ac-1687-4e2d-b4c6-d0706b3e3fe2)" alt="descrição" width="300" height="200"/>
+
 ![image](https://github.com/user-attachments/assets/9784d7ac-1687-4e2d-b4c6-d0706b3e3fe2)
