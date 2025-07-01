@@ -1,5 +1,5 @@
-## Plot clusters and sequences of visited victims
-## Author: Cesar Tacla, 02 April 2024
+## Plot grid with walls, obstacles and victims' positions.
+## Author: Cesar Tacla, 01 July 2025
 ##
 ## Read the obstacles file and the victims' coordinates file and plot the 2D grid.
 ##
@@ -11,9 +11,7 @@
 ##    lower left | lower right
 ##
 ## To run this program you have to:
-## - set the variables of the section Input files and folder
-## - set the flag ABS_COORDINATES to True or False (when false, the program adds the base coods
-##   defined in the env_config.txt to the coordinates of the cluster and seq files
+## - set the variables of the section Input files and parameters
 
 import pygame
 import os
@@ -22,16 +20,14 @@ import math
 import csv
 import sys
 
-
-# Input files and parameters
+# Input files and parameters - to be set
 data_folder = "."
 obst_file = "env_obst.txt"                        # the program concatenates data_folder + obst_file                      
 victims_file = "env_victims.txt"                  # the program concatenates data_folder + victims_file
-R = 100                                           # define the number of rows
-C = 100                                           # define the number of columbs
+R = 100                                           # define the number of rows of the grid
+C = 100                                           # define the number of columbs of the grid
 WIDTH = 700                                       # define the window width in pixels
 HEIGHT = 700                                      # define the window height in pixels
-
 
 # initial settings
 CELLW = WIDTH/C
