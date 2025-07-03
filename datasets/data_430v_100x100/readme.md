@@ -18,6 +18,7 @@
 - TLIM socorro: 1000
 
 ## Grid
+- BASE 5,55
 - 100 x 100
 
 ![image](https://github.com/user-attachments/assets/790baaf0-f4dd-41cb-8d23-e2ae357b53bd)
